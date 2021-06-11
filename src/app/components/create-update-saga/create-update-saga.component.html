@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar color="primary" class="d-flex">
+    <ion-button (click)="cancel()" fill="clear" shape="round">
+      <ion-icon slot="start" name="close-outline"></ion-icon>
+      <ion-title>{{saga?"Actualiza la saga '"+saga.name+"'" : 'Añade una nueva saga'}}</ion-title>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="floating">Escribe el nombre</ion-label>
+    <ion-input [(ngModel)]="name"></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-label position="floating">Numero de series de la saga</ion-label>
+    <ion-input type="number" [(ngModel)]="seriesCount"></ion-input>
+  </ion-item>
+  <p>NOTA: Luego podrá aumentar el número de series si lo desea</p>
+  <ion-button (click)="chooseImg()" shape="round">
+    <ion-icon slot="start" name="image-outline"></ion-icon>
+    Agregar imagen
+  </ion-button>
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+
+    <ion-button (click)="add()" expand="block" mode="ios" color="primary" shape="round">
+      <ion-icon slot="start" name="layers-outline"></ion-icon>
+      Guardar
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

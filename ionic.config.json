@@ -1,5 +1,7 @@
 {
   "name": "marker",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "angular"
 }
