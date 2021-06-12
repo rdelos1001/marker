@@ -1,5 +1,16 @@
 <app-header title="Temporadas"></app-header>
 
 <ion-content>
-
+    <ion-card *ngFor="let s of seasonsList">
+        <ion-card-header>
+            <ion-card-subtitle>{{s.name}} - {{s.number}}</ion-card-subtitle>
+            <ion-card-title></ion-card-title>
+        </ion-card-header>
+        <ion-card-content>
+            <h1>TEMPORADA - {{s.number}} de {{s.serie.name}}</h1>
+            <ion-button (click)="inspect(s)" expand="block" fill="clear" shape="round">
+                Inspeccionar
+            </ion-button>
+        </ion-card-content>
+    </ion-card>
 </ion-content>

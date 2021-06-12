@@ -5,16 +5,25 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { HeaderComponent } from './header/header.component';
 import { MenuComponent } from './menu/menu.component';
-
-
+import { CreateUpdateSerieComponent } from './create-update-serie/create-update-serie.component';
 
 @NgModule({
-  declarations: [CreateSagaComponent,HeaderComponent,MenuComponent],
+  declarations: [
+    CreateSagaComponent,
+    CreateUpdateSerieComponent,
+    HeaderComponent,
+    MenuComponent
+  ],
   imports: [
     CommonModule,
     FormsModule,
     IonicModule
   ],
-  exports:[CreateSagaComponent,HeaderComponent,MenuComponent]
+  exports:[
+    CreateSagaComponent,
+    CreateUpdateSerieComponent,
+    HeaderComponent,
+    MenuComponent
+  ]
 })
 export class ComponentsModule { }

@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Episode } from 'src/app/interfaces/episode';
 
 @Component({
   selector: 'app-episodes',
@@ -7,9 +9,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class EpisodesPage implements OnInit {
 
-  constructor() { }
-
+  constructor(private actRoute:ActivatedRoute) { }
+  episodeList:Episode[]
+  
   ngOnInit() {
+    let id=parseInt(this.actRoute.snapshot.paramMap.get('id_serie'))
+      
   }
 
 }

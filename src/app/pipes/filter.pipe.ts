@@ -11,9 +11,12 @@ export class FilterPipe implements PipeTransform {
     if(args==""){
       return value
     }
-    if(value && value.length>0){
+    console.log("FILTER.PIPE.VALUE-> "+ JSON.stringify(value))
+    console.log("FILTER.PIPE.ARGS -> "+JSON.stringify(args));
+    
+    if(args!=undefined && value!=undefined && value.length>0){
       for (const i of value) {
-        if(i.name.toLocaleLowerCase().indexOf(args.toLocaleLowerCase())>-1){
+        if(i.name.toLowerCase().indexOf(args.toLowerCase())>-1){
           result.push(i);
         };
       };

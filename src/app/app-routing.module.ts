@@ -3,20 +3,16 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
-    path: 'saga',
-    loadChildren: () => import('./pages/saga/saga.module').then( m => m.SagaPageModule)
-  },
-  {
     path: '',
-    redirectTo: 'saga',
+    redirectTo: 'serie',
     pathMatch: 'full'
   },
   {
-    path: 'season',
+    path: 'season/:id_serie',
     loadChildren: () => import('./pages/season/season.module').then( m => m.SeasonPageModule)
   },
   {
-    path: 'episodes',
+    path: 'episodes/:id_season',
     loadChildren: () => import('./pages/episodes/episodes.module').then( m => m.EpisodesPageModule)
   }, {
     path: 'serie',

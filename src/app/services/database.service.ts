@@ -4,7 +4,8 @@ import { SQLitePorter } from '@ionic-native/sqlite-porter/ngx';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 import { Platform } from '@ionic/angular';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Saga } from '../interfaces/saga';
+import { Episode } from '../interfaces/episode';
+import { Season } from '../interfaces/season';
 import { Serie } from '../interfaces/serie';
 import { UtilsService } from './utils.service';
 
@@ -13,7 +14,9 @@ import { UtilsService } from './utils.service';
 })
 export class DatabaseService {
   private dbReady: BehaviorSubject<boolean> = new BehaviorSubject(false);
-  sagas:BehaviorSubject<Saga[]>=new BehaviorSubject<Saga[]>(null);
+  series:BehaviorSubject<Serie[]>=new BehaviorSubject<Serie[]>(null);
+  seasons:BehaviorSubject<Season[]>= new BehaviorSubject<Season[]>(null);
+  episodes:BehaviorSubject<Episode[]>= new BehaviorSubject<Episode[]>(null);
   db:SQLiteObject=null;
 
   constructor(private ptl:Platform,
@@ -36,8 +39,8 @@ export class DatabaseService {
       this.sqlLitePorter.importSqlToDb(this.db,sql).then(_=>{
         console.log("IMPORTACIÓN EXISTOSA");
         
-        this.loadSagas();
-        this.dbReady.next(true)
+        this.loadSeries();
+        this.dbReady.next(true);
       })
       .catch(e=>{
         console.error("ERROR IMPORTANDO SQL")
@@ -49,74 +52,13 @@ export class DatabaseService {
   getDatabaseState(){
     return this.dbReady.asObservable();
   }
-  getSagas():Observable<Saga[]>{
-    return this.sagas.asObservable();
-  }
-
-  loadSagas(){
-    return this.db.executeSql('SELECT * FROM saga',[]).then((data)=>{
-      let sagas: Saga[]=[];
+  async loadSeries(){
+    return this.db.executeSql("SELECT * FROM serie",[]).then(async (data)=>{
+      let series:Serie[]=[];      
       if(data.rows.length>0){
         for (var i=0; i<data.rows.length;i++){
-          sagas.push({
-            id:data.rows.item(i).id,
-            name:data.rows.item(i).name,
-            image:data.rows.item(i).image
-          })
-        }
-      }
-      this.sagas.next(sagas)
-    })
-  }
-  getSaga(id):Promise<Saga>{
-    return this.db.executeSql('SELECT * FROM saga WHERE id=?',[id]).then((data)=>{
-      return {
-        id:data.rows.item(0).id,
-        name:data.rows.item(0).name,
-        image:data.rows.item(0).image,
-        seriesCount: data.rows.item(0).seriesCount
-      }
-    })
-  }
-  addSaga(saga:Saga){
-    if(!saga.image){
-      saga.image="assets/shapes.svg"
-    }
-
-    return this.db.executeSql('INSERT INTO saga (name, image) VALUES(?,?)',[saga.name,saga.image])
-    .then(data=>{
-      this.loadSagas();
-    })
-    .catch(err=>{
-      let errStr= JSON.stringify(err);
-      if(errStr.includes('UNIQUE constraint failed:')){ 
-        this._utils.presentAlert('ERROR',"La saga '"+saga.name+"' ya existe")
-      }else{
-        this._utils.presentAlert('ERROR',errStr);
-      }
-    })
-  }
-  deleteSaga(id){
-    return this.db.executeSql('DELETE FROM saga WHERE id=? ',[id]).then(_=>{
-      this.loadSagas();
-    })
-  }
-  updateSaga(saga:Saga){
-    return this.db.executeSql('UPDATE saga SET name = ?, image = ? WHERE id=?',[saga.name,saga.image,saga.id]).then(()=>{
-      this.loadSagas();
-    })
-  }
-  loadSeries(){
-    return this.db.executeSql("SELECT * FROM serie").then(async (data)=>{
-      let series:Serie[]=[];
-      if(data.rows.length>0){
-        for (var i=0; i<data.rows.length;i++){
-          var saga:Saga=null;
-          if(data.rows.item(i).id_saga)
-          saga= await this.getSaga(data.rows.item(i).id_saga);
           series.push({
             id:data.rows.item(i).id,
-            saga:saga,
             name:data.rows.item(i).name,
             image:data.rows.item(i).image,
             state:data.rows.item(i).state,
@@ -125,21 +67,50 @@ export class DatabaseService {
           })
         }
       }
+      this.series.next(series)
     })
   }
-  addSerie(serie:Serie,saga:Saga){
+  getSeries():Observable<Serie[]>{
+    return this.series.asObservable();
+  }
+  async getSerie(id:number):Promise<Serie>{
+    let serie:Serie;
+    var resp = await this.db.executeSql("SELECT * FROM serie WHERE id=?",[id]);
+    serie={
+      id:resp.rows.item(0).id,
+      name:resp.rows.item(0).name,
+      image:resp.rows.item(0).image,
+      state:resp.rows.item(0).state,
+      viewed:resp.rows.item(0).viewed,
+      webPage:resp.rows.item(0).webPage
+    }
+    return serie;
+  }
+  addSerie(serie:Serie):Promise<Serie>{
+    var sql="INSERT INTO serie(name, image, state, viewed, webPage) VALUES(?, ?, ?, ?, ?)";
     if(!serie.image){
-      serie.image="assets/shapes.svg";
+      sql=sql.replace(/\, image/,"");
+      sql=sql.replace(/\?\,/,"");
     }
     if(!serie.state){
-      serie.state="En emisión";
+      sql=sql.replace(/\, state/,"");
+      sql=sql.replace(/\?\,/,"");
     }
     if(!serie.viewed==undefined ||!serie.viewed==null){
-      serie.viewed=false;
+      sql=sql.replace(/\, viewed/,"");
+      sql=sql.replace(/\?\,/,"");
     }
-    return this.db.executeSql("INSERT INTO serie(id_saga,name,image,state,viewed,webPage) VALUES(?,?,?,?,?,?)",[saga.id,serie.name,serie.image,serie.state,serie.viewed,serie.webPage])
-    .then(()=>{
+    let params=[];
+    if(serie.name)params.push(serie.name);
+    if(serie.image)params.push(serie.image);
+    if(serie.state)params.push(serie.state);
+    if(serie.viewed)params.push(serie.viewed);
+    if(serie.webPage)params.push(serie.webPage);
+    
+    return this.db.executeSql(sql,params)
+    .then((data:any)=>{
       this.loadSeries();
+      return this.getSerie(data.insertId)
     })
   }
   deleteSerie(id){
@@ -148,9 +119,186 @@ export class DatabaseService {
     })
   }
   updateSerie(serie:Serie){
-    let sql="UPDATE serie SET id_saga=?, name=?, image=?, state=?, viewed=?, webPage=?";
-    return this.db.executeSql(sql,[serie.saga.id,serie.name,serie.image,serie.state,serie.viewed,serie.webPage]).then(()=>{
+    let sql="UPDATE serie SET name=?, image=?, state=?, viewed=?, webPage=? WHERE id=?";
+    return this.db.executeSql(sql,[serie.name,serie.image,serie.state,serie.viewed,serie.webPage,serie.id]).then(()=>{
       this.loadSeries();
+    })
+  }
+  async loadSeasons(id_serie:number){
+    return this.db.executeSql("SELECT * FROM season where id_serie=?",[id_serie]).then(async (data)=>{
+      let temporadas:Season[]=[];
+      let serie= await this.getSerie(id_serie);
+      if(data.rows.length>0){
+        for (var i=0; i<data.rows.length;i++){
+          temporadas.push({
+            id:data.rows.item(i).id,
+            serie,
+            name:data.rows.item(i).name,
+            number:data.rows.item(i).number,
+            viewed:data.rows.item(i).viewed
+          })
+        }
+      }
+      console.log(JSON.stringify(temporadas));
+      this.seasons.next(temporadas)
+    })
+  }
+  getSeasons(){
+    return this.seasons.asObservable();
+  }
+  async getSeason(id:number):Promise<Season>{
+    let season:Season;
+    var resp = await this.db.executeSql("SELECT * FROM season WHERE id=?",[id]);
+    season={
+      id:resp.rows.item(0).id,
+      serie:resp.rows.item(0).serie,
+      name:resp.rows.item(0).name,
+      number:resp.rows.item(0).number,
+      viewed:resp.rows.item(0).viewed
+    }
+    return season;
+  }
+  addSeason(season:Season):Promise<Season>{
+    var sql="INSERT INTO season(id_serie, name, number, viewed) VALUES(?, ?, ?, ?)";
+    if(!season.name){
+      sql=sql.replace(/\, name/,"");
+      sql=sql.replace(/\?\,/,"");
+    }
+    if(season.viewed==undefined){
+      sql=sql.replace(/\, viewed/,"");
+      sql=sql.replace(/\?\,/,"");
+    }
+
+    let params=[];
+    params.push(season.serie.id);
+    if(season.name)params.push(season.name);
+    params.push(season.number);
+    if(season.viewed!=undefined)params.push(season.viewed);
+    
+    return this.db.executeSql(sql,params)
+    .then((data)=>{
+      this.loadSeasons(season.serie.id);
+      return this.getSeason(data.insertId);
+    })
+  }
+  updateSeason(season:Season){
+    var sql="UPDATE season SET id_serie=?, name=?, number=?, viewed=? WHERE id=?";
+    if(!season.name){
+      sql=sql.replace(/\, name/,"");
+      sql=sql.replace(/\?\,/,"");
+    }
+    if(season.viewed==undefined){
+      sql=sql.replace(/\, viewed/,"");
+      sql=sql.replace(/\?\,/,"");
+    }
+
+    let params=[];
+    params.push(season.serie.id);
+    if(season.name)params.push(season.name);
+    params.push(season.number);
+    if(season.viewed!=undefined)params.push(season.viewed);
+    params.push(season.id);
+
+    return this.db.executeSql(sql,params)
+    .then(()=>{
+      this.loadSeasons(season.id);
+      return this.getSeason(season.id)
+    })
+  }
+  async deleteSeason(id){
+    var season= await this.getSeason(id);
+    return this.db.executeSql('DELETE FROM season WHERE id=?',[id]).then(()=>{
+      this.loadSeries();
+      return season;
+    })
+  }
+  async loadEpisodes(id_season:number){
+    return this.db.executeSql("SELECT * FROM episodes where id_season=?",[id_season]).then(async (data)=>{
+      let episodes:Episode[]=[];
+      let season= await this.getSeason(id_season);
+      if(data.rows.length>0){
+        for (var i=0; i<data.rows.length;i++){
+          episodes.push({
+            id:data.rows.item(i).id,
+            season,
+            name:data.rows.item(i).name,
+            number:data.rows.item(i).number,
+            viewed:data.rows.item(i).viewed
+          })
+        }
+      }
+      console.log(JSON.stringify(episodes));
+      this.episodes.next(episodes)
+    })
+  }
+  getEpisodes(){
+    return this.episodes.asObservable();
+  }
+  async getEpisode(id:number):Promise<Episode>{
+    let episode:Episode;
+    var resp = await this.db.executeSql("SELECT * FROM episode WHERE id=?",[id]);
+    var season = await this.getSeason(resp.rows.item(0).season)
+    episode={
+      id:resp.rows.item(0).id,
+      season,
+      name:resp.rows.item(0).name,
+      number:resp.rows.item(0).number,
+      viewed:resp.rows.item(0).viewed
+    }
+    return episode;
+  }
+  addEpisode(episode:Episode):Promise<Episode>{
+    var sql="INSERT INTO episode(id_season, name, number, viewed) VALUES(?, ?, ?, ?)";
+    if(!episode.name){
+      sql=sql.replace(/\, name/,"");
+      sql=sql.replace(/\?\,/,"");
+    }
+    if(episode.viewed==undefined){
+      sql=sql.replace(/\, viewed/,"");
+      sql=sql.replace(/\?\,/,"");
+    }
+
+    let params=[];
+    params.push(episode.season.id);
+    if(episode.name)params.push(episode.name);
+    params.push(episode.number);
+    if(episode.viewed!=undefined)params.push(episode.viewed);
+    
+    return this.db.executeSql(sql,params)
+    .then((data)=>{
+      this.loadEpisodes(episode.season.id);
+      return this.getEpisode(data.insertId);
+    })
+  }
+  updateEpisode(episode:Episode):Promise<Episode>{
+    var sql="UPDATE episode SET id_season=?, name=?, number=?, viewed=? WHERE id=?";
+    if(!episode.name){
+      sql=sql.replace(/\, name/,"");
+      sql=sql.replace(/\?\,/,"");
+    }
+    if(episode.viewed==undefined){
+      sql=sql.replace(/\, viewed/,"");
+      sql=sql.replace(/\?\,/,"");
+    }
+
+    let params=[];
+    params.push(episode.season.id);
+    if(episode.name)params.push(episode.name);
+    params.push(episode.number);
+    if(episode.viewed!=undefined)params.push(episode.viewed);
+    params.push(episode.id);
+
+    return this.db.executeSql(sql,params)
+    .then(()=>{
+      this.loadEpisodes(episode.season.id);
+      return this.getEpisode(episode.id);
+    })
+  }
+  async deleteEpisode(id):Promise<Episode>{
+    let episode = await this.getEpisode(id)
+    return this.db.executeSql('DELETE FROM season WHERE id=?',[id]).then(()=>{
+      this.loadSeries();
+      return episode;
     })
   }
   exportSQL():Promise<string>{
@@ -158,7 +306,7 @@ export class DatabaseService {
   }
   importSQL(data:string){
     return this.sqlLitePorter.importSqlToDb(this.db,data).then(()=>{
-      this.loadSagas();
+      this.loadSeries();
     });
   }
 }

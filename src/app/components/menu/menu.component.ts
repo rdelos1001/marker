@@ -13,19 +13,8 @@ export class MenuComponent implements OnInit {
   ngOnInit() {
     this.pages=[
       {
-        name:"Temporadas",
-        path:"/season"
-      },
-      {
         name:"Series",
         path:"/serie"
-      },
-      {
-        name:"Sagas",
-        path:"/saga"
-      },{
-        name:"Episodios",
-        path:"/episodes"
       },{
         name:"Configuración",
         path:"/configuration"
