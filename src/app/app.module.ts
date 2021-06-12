@@ -14,6 +14,8 @@ import { ImagePicker } from '@ionic-native/image-picker/ngx';
 import { SQLitePorter } from '@ionic-native/sqlite-porter/ngx';
 import { FormsModule } from '@angular/forms';
 import { ComponentsModule } from './components/components.module';
+import { AppVersion } from '@ionic-native/app-version/ngx';
+import { FileChooser } from '@ionic-native/file-chooser/ngx';
 
 
 @NgModule({
@@ -32,6 +34,8 @@ import { ComponentsModule } from './components/components.module';
     SQLitePorter,
     StatusBar,
     ImagePicker,
+    AppVersion,
+    FileChooser,
     { 
       provide: RouteReuseStrategy, 
       useClass: IonicRouteStrategy 

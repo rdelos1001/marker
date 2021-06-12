@@ -3,12 +3,12 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
-    path: 'home',
-    loadChildren: () => import('./pages/home/saga.module').then( m => m.HomePageModule)
+    path: 'saga',
+    loadChildren: () => import('./pages/saga/saga.module').then( m => m.SagaPageModule)
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'saga',
     pathMatch: 'full'
   },
   {
@@ -18,7 +18,15 @@ const routes: Routes = [
   {
     path: 'episodes',
     loadChildren: () => import('./pages/episodes/episodes.module').then( m => m.EpisodesPageModule)
+  }, {
+    path: 'serie',
+    loadChildren: () => import('./pages/serie/serie.module').then( m => m.SeriePageModule)
   },
+  {
+    path: 'configuration',
+    loadChildren: () => import('./pages/configuration/configuration.module').then( m => m.ConfigurationPageModule)
+  },
+
 ];
 
 @NgModule({

@@ -1,25 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { SQLite } from '@ionic-native/sqlite/ngx';
 import { ModalController } from '@ionic/angular';
-import { Observable } from 'rxjs';
 import { CreateSagaComponent } from 'src/app/components/create-update-saga/create-update-saga.component';
 import { Saga } from 'src/app/interfaces/saga';
 import { DatabaseService } from 'src/app/services/database.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { Filesystem } from '@capacitor/filesystem';
 
 @Component({
   selector: 'app-saga',
   templateUrl: 'saga.page.html',
   styleUrls: ['saga.page.scss'],
 })
-export class HomePage implements OnInit{
+export class SagaPage implements OnInit{
   sagaList:Saga[]
   filterSerie:string="";
   constructor(private modalController: ModalController,
               private _database:DatabaseService,
               private sqlLite:SQLite,
               private _utils:UtilsService) {
-
+ 
               }
 
   async ngOnInit(){ 
@@ -27,7 +27,7 @@ export class HomePage implements OnInit{
       if(ready){
         console.log("GETTING SAGAS")
         this._database.getSagas().subscribe((data)=>{
-          console.log("Sagas change ",data);
+          console.log("Sagas change ",JSON.stringify(data));
           
           this.sagaList=data
         })
@@ -68,5 +68,8 @@ export class HomePage implements OnInit{
     if(role=="ok"){
       this._database.deleteSaga(saga.id)
     }
+  }
+  async getImage(saga:Saga){   
+    return saga.image
   }
 }

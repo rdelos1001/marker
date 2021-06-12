@@ -2,10 +2,11 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { HomePage } from './saga.page';
+import { SagaPage } from './saga.page';
 
-import { HomePageRoutingModule } from './saga-routing.module';
+import { SagaPageRoutingModule } from './saga-routing.module';
 import { FilterPipe } from 'src/app/pipes/filter.pipe';
+import { ComponentsModule } from 'src/app/components/components.module';
 
 
 @NgModule({
@@ -13,8 +14,9 @@ import { FilterPipe } from 'src/app/pipes/filter.pipe';
     CommonModule,
     FormsModule,
     IonicModule,
-    HomePageRoutingModule
+    SagaPageRoutingModule,
+    ComponentsModule
   ],
-  declarations: [HomePage,FilterPipe]
+  declarations: [SagaPage,FilterPipe]
 })
-export class HomePageModule {}
+export class SagaPageModule {}

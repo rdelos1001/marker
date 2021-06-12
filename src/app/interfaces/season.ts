@@ -5,6 +5,5 @@ export interface Season {
     serie:Serie
     name?:string,
     number:number,
-    episodeCount:number,
     viewed:boolean
 }

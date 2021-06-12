@@ -7,6 +7,5 @@ export interface Serie {
     image?:string,
     state?:string,
     viewed?:boolean,
-    webPage?:string,
-    seasonsCount?:number
+    webPage?:string
 }

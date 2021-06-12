@@ -6,15 +6,15 @@ import { Saga } from '../interfaces/saga';
 })
 export class FilterPipe implements PipeTransform {
 
-  transform(value: Saga[], args: string): unknown {
+  transform(value: any[], args: string): unknown {
     var result=[];
     if(args==""){
       return value
     }
-    if(value.length>0){
-      for (const saga of value) {
-        if(saga.name.toLocaleLowerCase().indexOf(args.toLocaleLowerCase())>-1){
-          result.push(saga);
+    if(value && value.length>0){
+      for (const i of value) {
+        if(i.name.toLocaleLowerCase().indexOf(args.toLocaleLowerCase())>-1){
+          result.push(i);
         };
       };
       return result;

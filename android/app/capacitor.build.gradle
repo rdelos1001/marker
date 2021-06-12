@@ -9,7 +9,7 @@ android {
 
 apply from: "../capacitor-cordova-android-plugins/cordova.variables.gradle"
 dependencies {
-
+    implementation project(':capacitor-filesystem')
     implementation "com.android.support:appcompat-v7:27.+"
 }
 apply from: "../../node_modules/cordova-plugin-telerik-imagepicker/src/android/ignorelinterrors.gradle"

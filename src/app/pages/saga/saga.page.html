@@ -1,13 +1,6 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>
-      Marker
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
-
+<app-header title="Sagas"></app-header>
 <ion-content>
-  <ion-input type="text" placeholder="Encuentra tu serie" [(ngModel)]="filterSerie"></ion-input>
+  <ion-input type="text" placeholder="Encuentra tu saga" [(ngModel)]="filterSerie"></ion-input>
   <ion-card *ngFor="let saga of sagaList | filter:filterSerie">
     <ion-card-header>
 
@@ -28,7 +21,7 @@
       <ion-card-title></ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <img [src]="saga.image" width="100%" alt="">
+      <img src="/assets/shapes.svg" width="100%" alt="">
     </ion-card-content>
   </ion-card>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">

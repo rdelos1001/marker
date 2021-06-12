@@ -4,19 +4,20 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { SeasonPageRoutingModule } from './season-routing.module';
+import { SeriePageRoutingModule } from './serie-routing.module';
 
-import { SeasonPage } from './season.page';
+import { SeriePage } from './serie.page';
 import { ComponentsModule } from 'src/app/components/components.module';
+import { FilterPipe } from 'src/app/pipes/filter.pipe';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    SeasonPageRoutingModule,
+    SeriePageRoutingModule,
     ComponentsModule
   ],
-  declarations: [SeasonPage]
+  declarations: [SeriePage,FilterPipe]
 })
-export class SeasonPageModule {}
+export class SeriePageModule {}
