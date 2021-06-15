@@ -25,29 +25,38 @@ export class ConfigurationPage implements OnInit {
   }
   async downloadSQL(){
     const {role}= await this._utils.presentAlertConfirm('Exportar SQL',"¿Estas seguro de exportar la base de datos en formato SQL?");
-    if(role){
-      if(role=="ok"){
-        let data= await this._database.exportSQL();
-        data=data.substring(data.indexOf('INSERT'));
-        data=data.replace(/ OR REPLACE/g,"");
-        data=data.replace(/\(id\,/g,"(");
-        data=data.replace(/VALUES \(\'[0-9]+\'\,/g,"VALUES (");
-        await Filesystem.writeFile({
-          path: 'markerDB.sql',
-          data,
-          directory: Directory.Documents,
-          encoding: Encoding.UTF8,
-        }).then(result=>{
-          this._utils.presentAlert('Éxito',`El SQL ha sido descargado en '${result.uri.substring(7)}'` );
-        });
-      }
+    if(role && role=="ok"){
+      let fullSql= await this._database.exportSQL();
+      /*Descargar archivo de INSERTS */
+      let data=fullSql.substring(fullSql.indexOf('INSERT'));
+      data = "/* MARKER APP SQL INSERTS DE LA BBDD*/\n"+data;
+      data=data.replace(/ OR REPLACE/g,"");
+      data=data.replace(/\(id\,/g,"(");
+      data=data.replace(/VALUES \(\'[0-9]+\'\,/g,"VALUES (");
+      var resultInserts= await Filesystem.writeFile({
+        path: 'markerDBValues.sql',
+        data,
+        directory: Directory.Documents,
+        encoding: Encoding.UTF8,
+      })
+      
+      data = fullSql.substring(0,fullSql.indexOf("INSERT"));
+      data = "/* MARKER APP SQL ESTRUCTURA DE LA BBDD*/\n"+data;
+      var resultsEstructure= await Filesystem.writeFile({
+        path: 'markerDB.sql',
+        data,
+        directory: Directory.Documents,
+        encoding: Encoding.UTF8,
+      })
+      this._utils.presentAlert('Éxito',`Archivos SQL han sido descargado en '${resultsEstructure.uri.substring(7,resultsEstructure.uri.lastIndexOf("/"))}'` );
     }
   }
   importSQL(){
     this.fileChooser.open({mime:"application/sql"}).then(uri=>{
       Filesystem.readFile({path:uri,encoding:Encoding.UTF8}).then(result=>{        
         this._database.importSQL(result.data).then(()=>{
-          this._utils.presentAlert('ÉXITO','Se ha importado el archivo')
+          this._database.loadSeries();
+          this._utils.presentAlert('ÉXITO','Se ha importado el archivo');
         })
       })
     })

@@ -16,15 +16,9 @@ export class SeasonPage implements OnInit {
 
   ngOnInit() {
     let id=parseInt(this.activatedRouted.snapshot.paramMap.get('id_serie'))
-    this._database.loadSeasons(id);
-    this._database.getSeasons().subscribe((data)=>{
-      console.log(JSON.stringify(data));
-      
+    this._database.loadSeasons(id)
+    this._database.getSeasons().subscribe((data)=>{      
       this.seasonsList=data;
     })
   }
-
-    inspect(season:Season){
-      this.router.navigate(["episodes",season.id])
-    }
 }

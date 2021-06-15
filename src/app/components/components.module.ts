@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CreateSagaComponent } from './create-update-saga/create-update-saga.component';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { HeaderComponent } from './header/header.component';
@@ -9,7 +8,6 @@ import { CreateUpdateSerieComponent } from './create-update-serie/create-update-
 
 @NgModule({
   declarations: [
-    CreateSagaComponent,
     CreateUpdateSerieComponent,
     HeaderComponent,
     MenuComponent
@@ -20,7 +18,6 @@ import { CreateUpdateSerieComponent } from './create-update-serie/create-update-
     IonicModule
   ],
   exports:[
-    CreateSagaComponent,
     CreateUpdateSerieComponent,
     HeaderComponent,
     MenuComponent

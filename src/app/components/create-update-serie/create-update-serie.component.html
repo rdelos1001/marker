@@ -1,24 +1,25 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-button (click)="cancel()" fill="clear" shape="round">
-      <ion-icon slot="start" name="close-outline"></ion-icon>
-      <ion-title>{{serie?"Actualiza la serie '"+serie.name+"'" : 'Añade una nueva serie'}}</ion-title>
-    </ion-button>
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()" fill="clear" shape="round">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{serie?"Actualiza la serie '"+serie.name.trim()+"'" : 'Añade una nueva serie'}}</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content class="ion-padding">
+<ion-content>
   <ion-list>
     <ion-item>
       <ion-label position="floating">Escribe el nombre</ion-label>
       <ion-input [(ngModel)]="name"></ion-input>
     </ion-item>
     <ion-item>
-      <ion-label position="floating">Estado</ion-label>
-      <ion-input type="text" placeholder="Por defecto 'En Emisión'" [(ngModel)]="state"></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-label (click)="toggleClic()">Vista</ion-label>
-      <ion-toggle [(ngModel)]="viewed"></ion-toggle>
+      <ion-label>Estado</ion-label>
+      <ion-select [(ngModel)]="state" interface="action-sheet">
+        <ion-select-option value="pending">Pendiente</ion-select-option>
+        <ion-select-option value="initiated">Empezada</ion-select-option>
+      </ion-select>
     </ion-item>
     <ion-item>
       <ion-label position="floating">Página web</ion-label>
@@ -28,6 +29,22 @@
       <ion-icon slot="start" name="image-outline"></ion-icon>
       Agregar imagen
     </ion-button>
+
+    <div *ngIf="state=='initiated'">
+      <p>Hasta donde has visto</p>
+      <ion-item>
+        <ion-label position="floating">Temporada</ion-label>
+        <ion-input type="number" [(ngModel)]="seasonsViewed"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Episodio</ion-label>
+        <ion-input type="number" [(ngModel)]="episodesViewed"></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-label position="floating">Episodios por temporada</ion-label>
+        <ion-input type="number" [(ngModel)]="episodes_seasons"></ion-input>
+      </ion-item>
+    </div>
   </ion-list>
 </ion-content>
 <ion-footer>

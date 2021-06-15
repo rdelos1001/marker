@@ -5,6 +5,5 @@ export interface Serie {
     name:string,
     image?:string,
     state?:string,
-    viewed?:boolean,
     webPage?:string
 }

@@ -9,6 +9,8 @@ import { MenuController } from '@ionic/angular';
 export class HeaderComponent implements OnInit {
   
   @Input() title:string;
+  @Input() back:boolean=false;
+
   constructor(private menuController: MenuController) { }
 
   ngOnInit() {}

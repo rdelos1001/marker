@@ -1,14 +1,15 @@
 <ion-header>
   <ion-toolbar color="primary">
-
-    <ion-buttons slot="start">
+    <ion-buttons *ngIf="back" slot="start">
+      <ion-back-button defaultHref=""></ion-back-button>
+    </ion-buttons>    
+    <ion-title>
+      {{title}}
+    </ion-title>
+    <ion-buttons slot="end">
       <ion-button (click)="toggleMenu()" fill="clear">
         <ion-icon slot="icon-only" name="menu"></ion-icon>
       </ion-button>
     </ion-buttons>
-    
-    <ion-title>
-      {{title}}
-    </ion-title>
   </ion-toolbar>
 </ion-header>

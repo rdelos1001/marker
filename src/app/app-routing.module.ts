@@ -12,9 +12,6 @@ const routes: Routes = [
     loadChildren: () => import('./pages/season/season.module').then( m => m.SeasonPageModule)
   },
   {
-    path: 'episodes/:id_season',
-    loadChildren: () => import('./pages/episodes/episodes.module').then( m => m.EpisodesPageModule)
-  }, {
     path: 'serie',
     loadChildren: () => import('./pages/serie/serie.module').then( m => m.SeriePageModule)
   },
