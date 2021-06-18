@@ -26,7 +26,15 @@ export class SeriePage implements OnInit {
       if(ready){
         this._database.loadSeries();
         this._database.getSeries().subscribe((data)=>{
-          this.serieList=data;
+          if(data){
+            this.serieList=data;
+            //NO SE COMO VA PERO ORDENA ALFABETICAMENTE
+            this.serieList.sort(function(a,b){
+              var textA = a.state.toLowerCase();
+              var textB = b.state.toLowerCase();
+              return (textA < textB)?-1:(textA> textB) ? 1:0;
+            });
+          }
         })
       }
     })
@@ -41,29 +49,36 @@ export class SeriePage implements OnInit {
     
     if(data){
       await this._utils.presentLoading('Generando serie ...');
-      var serie=await this._database.addSerie(data.serie);      
-      if(data.viewed){
-        for (let i = 1; i <= data.viewed.seasonsViewed; i++) {
-          var seasonViewed=i<data.viewed.seasonsViewed;
-          var totalEpisodes=data.viewed.episodes_seasons;
-          var viewedEpisodes=seasonViewed?totalEpisodes:data.viewed.episodesViewed;
-          await this._database.addSeason({
+      await this._database.addSerie(data.serie)
+      .then(async (serie)=>{
+        if(data.viewed){
+          for (let i = 1; i <= data.viewed.seasonsViewed; i++) {
+            var seasonViewed=i<data.viewed.seasonsViewed;
+            var totalEpisodes=data.viewed.episodes_seasons;
+            var viewedEpisodes=seasonViewed?totalEpisodes:data.viewed.episodesViewed;
+            await this._database.addSeason({
+              serie,
+              number:i,
+              totalEpisodes,
+              viewedEpisodes
+            })
+          }
+        }else{
+          var season=await this._database.addSeason({
+            number:1,
             serie,
-            number:i,
-            totalEpisodes,
-            viewedEpisodes
+            totalEpisodes:1,
+            viewedEpisodes:0
           })
         }
-      }else{
-        var season=await this._database.addSeason({
-          number:1,
-          serie,
-          totalEpisodes:1,
-          viewedEpisodes:0
-        })
-      }
-      this._database.loadSeries();
-      this._utils.hideLoading();
+      })
+      .catch((err)=>{
+        this._utils.presentAlert("Error","La serie ya existe");
+      })
+      .finally(()=>{
+        this._database.loadSeries();
+        this._utils.hideLoading();
+      });      
     }
   }
   async edit(serie:Serie){
