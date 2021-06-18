@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { SQLitePorter } from '@ionic-native/sqlite-porter/ngx';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 import { Platform } from '@ionic/angular';
@@ -66,6 +66,10 @@ export class DatabaseService {
   }
 
   async getSerie(id:number):Promise<Serie>{
+    if(!id){
+      console.error("No hay id "+id);
+      return null
+    }
     let serie:Serie={
       name:null
     };
@@ -101,9 +105,7 @@ export class DatabaseService {
     if(serie.state)params.push(serie.state);
     if(serie.webPage)params.push(serie.webPage);
     
-    var data = await this.db.executeSql(sql,params);
-    debugger;
-    await this.loadSeries();
+    var data = await this.db.executeSql(sql,params);    
     return this.getSerie(data.insertId);
   }
   async deleteSerie(id){
@@ -115,7 +117,7 @@ export class DatabaseService {
   async updateSerie(serie:Serie){
     if(!serie.id)
     throw new Error("No hay id de serie");
-    let sql="UPDATE serie SET name=?, image=?, webPage=? WHERE id=?";
+    let sql="UPDATE serie SET name=?, image=?, webPage=?, state=? WHERE id=?";
     if(!serie.image){
       sql=sql.replace(/\, image=\?/,"");
     }
@@ -127,10 +129,11 @@ export class DatabaseService {
     params.push(serie.name);
     if(serie.image)params.push(serie.image);
     if(serie.webPage)params.push(serie.webPage);
+    if(serie.state)params.push(serie.state);
     params.push(serie.id)
     await this.db.executeSql(sql,params);
     this.loadSeries();
-    return serie;
+    return this.getSerie(serie.id);
   }
   async loadSeasons(id_serie){
     let temporadas:Season[]=[];
@@ -142,7 +145,6 @@ export class DatabaseService {
           id:data.rows.item(i).id,
           serie,
           number:data.rows.item(i).number,
-          viewed:data.rows.item(i).viewed,
           totalEpisodes:data.rows.item(i).totalEpisodes,
           viewedEpisodes:data.rows.item(i).viewedEpisodes
         })
@@ -162,7 +164,6 @@ export class DatabaseService {
         id:resp.rows.item(0).id,
         serie,
         number:resp.rows.item(0).number,
-        viewed:resp.rows.item(0).viewed,
         totalEpisodes:resp.rows.item(0).totalEpisodes,
         viewedEpisodes:resp.rows.item(0).viewedEpisodes
       }
@@ -172,11 +173,7 @@ export class DatabaseService {
     }
   }
   async addSeason(season:Season):Promise<Season>{
-    var sql="INSERT INTO season(number, viewed, id_serie, totalEpisodes, viewedEpisodes) VALUES(?, ?, ?, ?, ?)";
-    if(season.viewed==undefined){
-      sql=sql.replace(/\, viewed/,"");
-      sql=sql.replace(/\?\,/,"");
-    }
+    var sql="INSERT INTO season(number, id_serie, totalEpisodes, viewedEpisodes) VALUES(?, ?, ?, ?)";
     if(!season.totalEpisodes){
       sql=sql.replace(/\, totalEpisodes/,"");
       sql=sql.replace(/\?\,/,"");
@@ -188,23 +185,18 @@ export class DatabaseService {
     }
     let params=[];
     params.push(season.number);
-    if(season.viewed!=undefined)params.push(season.viewed);
     params.push(season.serie.id);
     if(season.totalEpisodes)params.push(season.totalEpisodes);
     if(season.viewedEpisodes)params.push(season.viewedEpisodes);
 
     var data= await this.db.executeSql(sql,params);
-    this.loadSeasons(data.insertId);
+    this.loadSeasons(season.serie.id);
     return await this.getSeason(data.insertId)
   }
   async updateSeason(season:Season):Promise<Season>{
     if(!season.id)throw new Error("No hay id de temporada");
 
-    var sql="UPDATE season SET id_serie=?, number=?, viewed=?, totalEpisodes=?, viewedEpisodes=? WHERE id=?";
-
-    if(season.viewed==undefined){
-      sql=sql.replace(/\, viewed=\?\,/,"");
-    }
+    var sql="UPDATE season SET id_serie=?, number=?, totalEpisodes=?, viewedEpisodes=? WHERE id=?";
 
     if(!season.totalEpisodes){
       sql=sql.replace(/\, totalEpisodes=\?\,/,"");
@@ -216,7 +208,8 @@ export class DatabaseService {
     let params=[];
     params.push(season.serie.id);
     params.push(season.number);
-    if(season.viewed!=undefined)params.push(season.viewed);
+    if(season.totalEpisodes)params.push(season.totalEpisodes)
+    if(season.viewedEpisodes)params.push(season.viewedEpisodes)
     params.push(season.id);
 
     await this.db.executeSql(sql,params);

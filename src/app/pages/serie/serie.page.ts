@@ -1,7 +1,9 @@
+import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { CreateUpdateSerieComponent } from 'src/app/components/create-update-serie/create-update-serie.component';
+import { Season } from 'src/app/interfaces/season';
 import { Serie } from 'src/app/interfaces/serie';
 import { DatabaseService } from 'src/app/services/database.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -48,7 +50,6 @@ export class SeriePage implements OnInit {
           await this._database.addSeason({
             serie,
             number:i,
-            viewed:seasonViewed,
             totalEpisodes,
             viewedEpisodes
           })
@@ -57,7 +58,6 @@ export class SeriePage implements OnInit {
         var season=await this._database.addSeason({
           number:1,
           serie,
-          viewed:false,
           totalEpisodes:1,
           viewedEpisodes:0
         })
@@ -69,17 +69,48 @@ export class SeriePage implements OnInit {
   async edit(serie:Serie){
     const modal = await this.modalController.create({
       component: CreateUpdateSerieComponent,
-      componentProps: { serie }
+      componentProps: { id_serie:serie.id }
     });
     
     await modal.present();
     const { data }= await modal.onWillDismiss();
     if(data){
-      this._utils.presentLoading("Actualizando serie...")
-      this._database.updateSerie(data.serie);
-      var seasons = await this._database.loadSeasons(data.serie.id);
-      this._utils.hideLoading();
+      await this._utils.presentLoading("Actualizando serie...")
+      serie = await this._database.updateSerie(data.serie);
+      await this._database.loadSeasons(data.serie.id);
+      var seasons= this._database.seasons.getValue();
+      if(data.viewed && data.serie.state=="initiated"){
+        /*data.viewed={
+          seasonsViewed:this.seasonsViewed,
+          episodesViewed:this.episodesViewed,
+          episodes_seasons:this.episodes_seasons
+        } */
+        var season= seasons[seasons.length-1]
+        if(seasons[seasons.length-1].number==data.viewed.seasonsViewed){
+          season.viewedEpisodes=data.viewed.episodesViewed;
+          season.totalEpisodes=data.viewed.episodes_seasons;
+        }else{
+          season.viewedEpisodes=data.viewed.episodes_seasons;
+          season.totalEpisodes=data.viewed.episodes_seasons;
+        }
+        this._database.updateSeason(season)
+        for (let i = seasons[seasons.length-1].number+1; i <= data.viewed.seasonsViewed; i++) {
+          var season:Season={
+            number:i,
+            serie,
+            totalEpisodes:data.viewed.episodes_seasons,
+          }
+          if(i == data.viewed.seasonsViewed){
+            season.viewedEpisodes=data.viewed.episodesViewed;
+          }else{
+            season.viewedEpisodes=data.viewed.episodes_seasons;
+          }
+          this._database.addSeason(season)
+        }
+      }
     }
+    this._database.loadSeasons(serie.id)
+    this._utils.hideLoading();
   }
   async del(serie:Serie){
     var { role }=await this._utils.presentAlertConfirm("Aviso","¿Estas seguro que desea eliminar a "+serie.name+"?");

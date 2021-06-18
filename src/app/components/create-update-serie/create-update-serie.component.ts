@@ -14,7 +14,7 @@ import { UtilsService } from 'src/app/services/utils.service';
 })
 export class CreateUpdateSerieComponent implements OnInit {
 
-  @Input() serie:Serie;
+  @Input() id_serie:number;
 
   name:string;
   image:string;
@@ -29,19 +29,23 @@ export class CreateUpdateSerieComponent implements OnInit {
               private _utils:UtilsService,
               private _database:DatabaseService) { }
   
-  async ngOnInit() {
-    if(this.serie){
-      this.name=this.serie.name;
-      this.image=this.serie.image;
-      this.state=this.serie.state;
-      this.webPage=this.serie.webPage;
-      await this._database.loadSeasons(this.serie.id);
-      this._database.getSeasons().subscribe(data=>{
-        this.seasonsList=data;        
-        this.episodes_seasons=data[data.length-1].totalEpisodes;
-        this.episodesViewed  =data[data.length-1].viewedEpisodes;
-        this.seasonsViewed   =data[data.length-1].number;
-      });
+  ngOnInit() {
+    if(this.id_serie){
+      this._database.getSerie(this.id_serie).then(async (serie)=>{
+        console.log(JSON.stringify(serie));
+        
+        this.name=serie.name;
+        this.image=serie.image;
+        this.state=serie.state;
+        this.webPage=serie.webPage;
+        await this._database.loadSeasons(serie.id);
+        this._database.getSeasons().subscribe(data=>{
+          this.seasonsList=data;        
+          this.episodes_seasons=data[data.length-1].totalEpisodes;
+          this.episodesViewed  =data[data.length-1].viewedEpisodes;
+          this.seasonsViewed   =data[data.length-1].number;
+        });
+      })
     }else{
       this.state='pending'
     }
@@ -80,7 +84,7 @@ export class CreateUpdateSerieComponent implements OnInit {
           episodes_seasons:this.episodes_seasons
         }
       }
-      if(this.serie){ data.serie.id=this.serie.id}
+      if(this.id_serie){ data.serie.id=this.id_serie}
       
       this.modalController.dismiss(data)
     }
