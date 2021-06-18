@@ -66,19 +66,20 @@ export class CreateUpdateSerieComponent implements OnInit {
   }
   add(){
     if(this.name && this.name.length>0){
-      let data:any={
-        serie:{
-          name:this.name,
-          image:this.image,
-          state:this.state,
-          webPage:this.webPage
-        },
-        viewed:{
+      let data:any={}
+      data.serie={
+        name:this.name,
+        image:this.image,
+        state:this.state,
+        webPage:this.webPage
+      };
+      if(this.seasonsViewed && this.episodesViewed && this.episodes_seasons){
+        data.viewed={
           seasonsViewed:this.seasonsViewed,
           episodesViewed:this.episodesViewed,
           episodes_seasons:this.episodes_seasons
         }
-      };
+      }
       if(this.serie){ data.serie.id=this.serie.id}
       
       this.modalController.dismiss(data)

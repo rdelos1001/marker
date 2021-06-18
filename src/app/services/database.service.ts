@@ -236,5 +236,12 @@ export class DatabaseService {
   importSQL(data:string){
     return this.sqlLitePorter.importSqlToDb(this.db,data);
   }
-  getNextEpisode(serie:Serie){}
+  getNextEpisode(season:Season){
+    var nextEpisode:string="";
+    if(season.totalEpisodes==season.viewedEpisodes){
+      nextEpisode=(season.number+1)+"x1";
+    }else{
+      nextEpisode=(season.viewedEpisodes+1)+"";
+    }
+  }
 }

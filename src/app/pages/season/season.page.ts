@@ -16,9 +16,14 @@ export class SeasonPage implements OnInit {
 
   ngOnInit() {
     let id=parseInt(this.activatedRouted.snapshot.paramMap.get('id_serie'))
-    this._database.loadSeasons(id)
-    this._database.getSeasons().subscribe((data)=>{      
-      this.seasonsList=data;
+    this._database.loadSeasons(id);
+
+    this._database.getSeasons().subscribe((data)=>{     
+      if(data && data.length>0 && !this.seasonsList){
+        this.seasonsList=data;
+        this.seasonsList.sort((a,b)=>b.number-a.number);
+      }
     })
+    
   }
 }

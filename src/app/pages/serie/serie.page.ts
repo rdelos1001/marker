@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ModalController } from '@ionic/angular';
 import { CreateUpdateSerieComponent } from 'src/app/components/create-update-serie/create-update-serie.component';
-import { Season } from 'src/app/interfaces/season';
 import { Serie } from 'src/app/interfaces/serie';
 import { DatabaseService } from 'src/app/services/database.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -39,9 +38,9 @@ export class SeriePage implements OnInit {
     const { data }= await modal.onWillDismiss();
     
     if(data){
-      this._utils.presentLoading('Generando serie ...');
+      await this._utils.presentLoading('Generando serie ...');
       var serie=await this._database.addSerie(data.serie);      
-      if(data.viewed.seasonsViewed && data.viewed.episodes_seasons && data.viewed.episodesViewed){
+      if(data.viewed){
         for (let i = 1; i <= data.viewed.seasonsViewed; i++) {
           var seasonViewed=i<data.viewed.seasonsViewed;
           var totalEpisodes=data.viewed.episodes_seasons;
@@ -63,6 +62,7 @@ export class SeriePage implements OnInit {
           viewedEpisodes:0
         })
       }
+      this._database.loadSeries();
       this._utils.hideLoading();
     }
   }
@@ -81,8 +81,11 @@ export class SeriePage implements OnInit {
       this._utils.hideLoading();
     }
   }
-  del(serie:Serie){
-    this._database.deleteSerie(serie.id);
+  async del(serie:Serie){
+    var { role }=await this._utils.presentAlertConfirm("Aviso","¿Estas seguro que desea eliminar a "+serie.name+"?");
+    if(role=="ok"){
+      this._database.deleteSerie(serie.id);
+    }
   }
   inspect(serie:Serie){
     this.router.navigate(['/season',serie.id])
