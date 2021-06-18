@@ -111,7 +111,6 @@ export class DatabaseService {
   async deleteSerie(id){
     var serie= this.getSerie(id);
     await this.db.executeSql('DELETE FROM serie WHERE ID=?',[id]);
-    this.loadSeries();
     return serie;
   }
   async updateSerie(serie:Serie){
@@ -132,7 +131,6 @@ export class DatabaseService {
     if(serie.state)params.push(serie.state);
     params.push(serie.id)
     await this.db.executeSql(sql,params);
-    this.loadSeries();
     return this.getSerie(serie.id);
   }
   async loadSeasons(id_serie){
@@ -159,7 +157,7 @@ export class DatabaseService {
     let season:Season;    
     var resp = await this.db.executeSql("SELECT * FROM season WHERE id=?",[id]);
     if(resp.rows.length>0){
-      var serie= await this.getSerie(resp.rows.item(0).serie);
+      var serie= await this.getSerie(resp.rows.item(0).id_serie);
       season={
         id:resp.rows.item(0).id,
         serie,
@@ -190,7 +188,6 @@ export class DatabaseService {
     if(season.viewedEpisodes)params.push(season.viewedEpisodes);
 
     var data= await this.db.executeSql(sql,params);
-    this.loadSeasons(season.serie.id);
     return await this.getSeason(data.insertId)
   }
   async updateSeason(season:Season):Promise<Season>{
@@ -213,13 +210,11 @@ export class DatabaseService {
     params.push(season.id);
 
     await this.db.executeSql(sql,params);
-    this.loadSeasons(season.id);
     return this.getSeason(season.id)
   }
   async deleteSeason(id){
     var season = await this.getSeason(id);
     this.db.executeSql('DELETE FROM season WHERE id=?',[id]);
-    this.loadSeasons(id);
     return season;
   }
 
@@ -236,5 +231,6 @@ export class DatabaseService {
     }else{
       nextEpisode=(season.viewedEpisodes+1)+"";
     }
+    return nextEpisode;
   }
 }

@@ -5,7 +5,7 @@
         <ion-icon slot="icon-only" name="close-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>{{serie?"Actualiza la serie '"+serie.name.trim()+"'" : 'Añade una nueva serie'}}</ion-title>
+    <ion-title>{{id_serie?"Actualiza la serie '"+name+"'" : 'Añade una nueva serie'}}</ion-title>
   </ion-toolbar>
 </ion-header>
 <ion-content>
@@ -34,15 +34,15 @@
       <p>Hasta donde has visto</p>
       <ion-item>
         <ion-label position="floating">Temporada</ion-label>
-        <ion-input type="number" [(ngModel)]="seasonsViewed"></ion-input>
+        <ion-input type="number" [(ngModel)]="seasonsViewed" (ionBlur)="verify()"></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="floating">Episodio</ion-label>
-        <ion-input type="number" [(ngModel)]="episodesViewed"></ion-input>
+        <ion-input type="number" [(ngModel)]="episodesViewed" (ionBlur)="verify()"></ion-input>
       </ion-item>
       <ion-item>
         <ion-label position="floating">Episodios por temporada</ion-label>
-        <ion-input type="number" [(ngModel)]="episodes_seasons"></ion-input>
+        <ion-input type="number" [(ngModel)]="episodes_seasons" (ionBlur)="verify()"></ion-input>
       </ion-item>
     </div>
   </ion-list>

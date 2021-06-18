@@ -4,10 +4,12 @@
     <ion-card *ngFor="let s of seasonsList">
         <ion-card-header>
             <ion-card-subtitle>Temporada - {{s.number}}</ion-card-subtitle>
-            <ion-card-title></ion-card-title>
+            <ion-button (click)="edit(s)" fill="clear" shape="round">
+                <ion-icon name="ellipsis-horizontal-outline"></ion-icon>
+            </ion-button>
         </ion-card-header>
         <ion-card-content>
-            <h1 *ngIf="s.viewedEpisodes!=s.totalEpisodes">Siguiente episodio {{s.viewedEpisodes + 1}}</h1>
+            <h1 *ngIf="s==seasonsList[0]">Siguiente episodio {{_database.getNextEpisode(s)}}</h1>
             <h2>Vistos {{s.viewedEpisodes}} / {{s.totalEpisodes}}</h2>
         </ion-card-content>
     </ion-card>

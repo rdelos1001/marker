@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ModalController } from '@ionic/angular';
+import { EditSeasonComponent } from 'src/app/components/edit-season/edit-season.component';
 import { Season } from 'src/app/interfaces/season';
 import { DatabaseService } from 'src/app/services/database.service';
 
@@ -12,11 +14,12 @@ export class SeasonPage implements OnInit {
   seasonsList:Season[];
   constructor(private activatedRouted:ActivatedRoute,
               private _database:DatabaseService,
-              private router:Router) { }
-
+              private router:Router,
+              private modalController: ModalController) { }
+  id_serie:number;
   ngOnInit() {
-    let id=parseInt(this.activatedRouted.snapshot.paramMap.get('id_serie'))
-    this._database.loadSeasons(id);
+    this.id_serie=parseInt(this.activatedRouted.snapshot.paramMap.get('id_serie'))
+    this._database.loadSeasons(this.id_serie);
 
     this._database.getSeasons().subscribe((data)=>{     
       if(data && data.length>0 && !this.seasonsList){
@@ -25,5 +28,22 @@ export class SeasonPage implements OnInit {
       }
     })
     
+  }
+  async edit(season:Season){
+    const modal = await this.modalController.create({
+    component: EditSeasonComponent,
+    componentProps: { 
+      id_season: season.id,
+      serieName: season.serie.name
+    }
+    });
+  
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if(data){
+      this._database.updateSeason(data);
+      this._database.loadSeasons(this.id_serie);
+      window.location.reload()
+    }
   }
 }

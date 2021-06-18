@@ -90,8 +90,10 @@ export class SeriePage implements OnInit {
           season.viewedEpisodes=data.viewed.episodesViewed;
           season.totalEpisodes=data.viewed.episodes_seasons;
         }else{
-          season.viewedEpisodes=data.viewed.episodes_seasons;
-          season.totalEpisodes=data.viewed.episodes_seasons;
+          if(season.viewedEpisodes!=season.totalEpisodes){
+            season.viewedEpisodes=data.viewed.episodes_seasons;
+            season.totalEpisodes=data.viewed.episodes_seasons;
+          }
         }
         this._database.updateSeason(season)
         for (let i = seasons[seasons.length-1].number+1; i <= data.viewed.seasonsViewed; i++) {
@@ -108,9 +110,9 @@ export class SeriePage implements OnInit {
           this._database.addSeason(season)
         }
       }
+      this._database.loadSeasons(serie.id)
+      this._utils.hideLoading();
     }
-    this._database.loadSeasons(serie.id)
-    this._utils.hideLoading();
   }
   async del(serie:Serie){
     var { role }=await this._utils.presentAlertConfirm("Aviso","¿Estas seguro que desea eliminar a "+serie.name+"?");

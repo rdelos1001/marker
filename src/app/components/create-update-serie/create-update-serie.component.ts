@@ -31,9 +31,7 @@ export class CreateUpdateSerieComponent implements OnInit {
   
   ngOnInit() {
     if(this.id_serie){
-      this._database.getSerie(this.id_serie).then(async (serie)=>{
-        console.log(JSON.stringify(serie));
-        
+      this._database.getSerie(this.id_serie).then(async (serie)=>{        
         this.name=serie.name;
         this.image=serie.image;
         this.state=serie.state;
@@ -48,6 +46,14 @@ export class CreateUpdateSerieComponent implements OnInit {
       })
     }else{
       this.state='pending'
+    }
+  }
+  verify(){
+    this.seasonsViewed= this.seasonsViewed<this.seasonsList.length? this.seasonsList.length:Number.parseInt(this.seasonsViewed+"");
+    this.episodesViewed=this.episodesViewed<0?0:Number.parseInt(this.episodesViewed+"");
+    this.episodes_seasons=this.episodes_seasons<0?0:Number.parseInt(this.episodes_seasons+"");
+    if(this.episodesViewed>this.episodes_seasons){
+      this.episodes_seasons=this.episodesViewed;
     }
   }
   chooseImg(){
