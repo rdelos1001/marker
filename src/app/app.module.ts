@@ -17,6 +17,8 @@ import { ComponentsModule } from './components/components.module';
 import { AppVersion } from '@ionic-native/app-version/ngx';
 import { FileChooser } from '@ionic-native/file-chooser/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
+import { enterAnimation } from './animations/nav-animation';
+import { modalAnimation } from './animations/modal-animation';
 
 
 @NgModule({
@@ -24,7 +26,9 @@ import { FilePath } from '@ionic-native/file-path/ngx';
   entryComponents: [],
   imports: [
     BrowserModule, 
-    IonicModule.forRoot(), 
+    IonicModule.forRoot({
+      navAnimation:enterAnimation
+    }), 
     FormsModule,
     AppRoutingModule,
     HttpClientModule,

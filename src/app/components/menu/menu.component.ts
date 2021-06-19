@@ -19,10 +19,6 @@ export class MenuComponent implements OnInit {
         this._database.getSeries().subscribe((data)=>{
           if(data!=null){
             this.pages=[];
-            this.pages.push({
-              name:"Configuración",
-              path:"configuration"
-            })
             data.forEach((s)=>{
               this.pages.push({
                 name:s.name,

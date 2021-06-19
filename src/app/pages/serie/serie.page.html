@@ -19,14 +19,14 @@
           <ion-fab-button color="danger" (click)="del(serie)"><ion-icon name="trash-bin-outline"></ion-icon></ion-fab-button>
         </ion-fab-list>
       </ion-fab> 
-      <div class="header" (click)="inspect(serie)">
+      <div class="header" [routerLink]="['/season',serie.id]">
         <ion-card-title><b>{{serie.name}}</b></ion-card-title>
         <h1>{{findNextEpisode(serie)}}</h1>
         <ion-card-subtitle>{{serie.state=='initiated'?'Empezada':'Pendiente'}}</ion-card-subtitle>
         <ion-card-subtitle *ngIf="serie.webPage">Página web: <b>{{serie.webPage}}</b></ion-card-subtitle>
       </div>
     </ion-card-header>
-    <ion-card-content (click)="inspect(serie)">
+    <ion-card-content [routerLink]="['/season',serie.id]">
       <img [src]="findImage(serie.id)" width="100%" alt="imagen de la serie" >
     </ion-card-content>
   </ion-card>

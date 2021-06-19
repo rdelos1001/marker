@@ -7,6 +7,12 @@ menuId="first" contentId="main">
     </ion-header>
     <ion-content>
         <ion-list>
+            <ion-menu-toggle>
+                <ion-item button (click)="navigate('configuration')">
+                    <ion-label>Configuración</ion-label>
+                </ion-item>
+            </ion-menu-toggle>
+            <h2>Series</h2>
             <ion-menu-toggle *ngFor="let p of pages">
                 <ion-item button (click)="navigate(p.path)">{{p.name}}</ion-item>
             </ion-menu-toggle>

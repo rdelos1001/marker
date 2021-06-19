@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Filesystem } from '@capacitor/filesystem';
-import { AnimationController, ModalController } from '@ionic/angular';
+import { ModalController } from '@ionic/angular';
+import { modalAnimation } from 'src/app/animations/modal-animation';
 import { CreateUpdateSerieComponent } from 'src/app/components/create-update-serie/create-update-serie.component';
 import { Season } from 'src/app/interfaces/season';
 import { Serie } from 'src/app/interfaces/serie';
@@ -57,7 +58,9 @@ export class SeriePage implements OnInit {
   async addSerie(){
     const modal = await this.modalController.create({
       component: CreateUpdateSerieComponent,
-      componentProps: { }
+      componentProps: { },
+      animated:true,
+      enterAnimation:modalAnimation
     });
     await modal.present();
     const { data }= await modal.onWillDismiss();
@@ -150,11 +153,6 @@ export class SeriePage implements OnInit {
         path:serie.image
       });
     }
-  }
-  inspect(serie:Serie){
-    setTimeout(()=>{
-      this.router.navigate(['/season',serie.id])
-    },500)
   }
   async getImageData(path:string):Promise<string>{
     if(path=="/assets/shapes.svg"){
