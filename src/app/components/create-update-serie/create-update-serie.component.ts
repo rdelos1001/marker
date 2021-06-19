@@ -13,12 +13,13 @@ import { Filesystem } from '@capacitor/filesystem';
   styleUrls: ['./create-update-serie.component.scss'],
 })
 export class CreateUpdateSerieComponent implements OnInit {
-
+  private DEFAULT_IMAGE="/assets/shapes.svg";
   @Input() id_serie:number;
 
   name:string;
   imagePath:string=null;
-  imgBase64
+  imgBase64:string;
+  lastImagePath:string=this.DEFAULT_IMAGE;
   state:string;
   webPage:string;
   seasonsList:Season[];
@@ -34,14 +35,15 @@ export class CreateUpdateSerieComponent implements OnInit {
     if(this.id_serie){
       this._database.getSerie(this.id_serie).then(async (serie)=>{
         if(serie.image){
-          if(serie.image=="/assets/shapes.svg"){
-            this.imgBase64="/assets/shapes.svg";
+          if(serie.image==this.DEFAULT_IMAGE){
+            this.imgBase64=this.DEFAULT_IMAGE;
           }else{
+            this.lastImagePath=serie.image;
             Filesystem.readFile({
               path:serie.image
             }).then((base64)=>{   
               this.imgBase64='data:image/jpeg;base64,'+base64.data;
-            })
+            });
           }          
         }     
         this.name=serie.name;
@@ -58,7 +60,7 @@ export class CreateUpdateSerieComponent implements OnInit {
       })
     }else{
       this.state='pending';
-      this.imgBase64="/assets/shapes.svg"
+      this.imgBase64=this.DEFAULT_IMAGE
     }
   }
   verify(){
@@ -86,7 +88,7 @@ export class CreateUpdateSerieComponent implements OnInit {
   }
   async add(){
     if(this.name && this.name.length>0){
-      if(this.imgBase64){
+      if(this.imgBase64 && this.imgBase64!=this.DEFAULT_IMAGE){
         var permissionStatus =await Filesystem.requestPermissions();
         if(permissionStatus.publicStorage=="granted"){
           var hoy=new Date();
@@ -97,6 +99,11 @@ export class CreateUpdateSerieComponent implements OnInit {
             path:this.imagePath,
             recursive:true
           })
+          if(this.lastImagePath!=this.DEFAULT_IMAGE){
+            Filesystem.deleteFile({
+              path:this.lastImagePath
+            })
+          }
         }
       }
       let data:any={};

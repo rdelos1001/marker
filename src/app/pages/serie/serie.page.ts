@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Filesystem } from '@capacitor/filesystem';
 import { ModalController } from '@ionic/angular';
-import { BehaviorSubject, Observable } from 'rxjs';
 import { CreateUpdateSerieComponent } from 'src/app/components/create-update-serie/create-update-serie.component';
 import { Season } from 'src/app/interfaces/season';
 import { Serie } from 'src/app/interfaces/serie';
@@ -134,6 +133,9 @@ export class SeriePage implements OnInit {
         }
       }
       this.serieList[serieIndex]=serie;
+      this.getImageData(serie.image).then((base64)=>{
+        this.serie_base64[serieIndex].base64=base64
+      })
       this._database.loadSeasons(serie.id)
       this._utils.hideLoading();
     }
