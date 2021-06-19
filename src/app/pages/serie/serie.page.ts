@@ -1,7 +1,8 @@
-import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Filesystem } from '@capacitor/filesystem';
 import { ModalController } from '@ionic/angular';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { CreateUpdateSerieComponent } from 'src/app/components/create-update-serie/create-update-serie.component';
 import { Season } from 'src/app/interfaces/season';
 import { Serie } from 'src/app/interfaces/serie';
@@ -16,6 +17,10 @@ import { UtilsService } from 'src/app/services/utils.service';
 export class SeriePage implements OnInit {
   filterSerie:string="";
   serieList:Serie[];
+  serie_base64:{
+    serie:number,
+    base64:string
+  }[]=[]
   constructor(private _database:DatabaseService,
               private modalController: ModalController,
               private router:Router,
@@ -25,8 +30,15 @@ export class SeriePage implements OnInit {
     this._database.getDatabaseState().subscribe((ready:boolean)=>{
       if(ready){
         this._database.loadSeries();
-        this._database.getSeries().subscribe((data)=>{
+        this._database.getSeries().subscribe(async (data)=>{
           if(data){
+            for (const s of data) { 
+              let base64= await this.getImageData(s.image);
+              this.serie_base64.push({
+                serie:s.id,
+                base64
+              });
+            }
             this.serieList=data;
             //NO SE COMO VA PERO ORDENA ALFABETICAMENTE
             this.serieList.sort(function(a,b){
@@ -137,5 +149,20 @@ export class SeriePage implements OnInit {
   }
   inspect(serie:Serie){
     this.router.navigate(['/season',serie.id])
+  }
+  async getImageData(path:string):Promise<string>{
+    if(path=="/assets/shapes.svg"){
+      return "/assets/shapes.svg";
+    }
+    var result = await Filesystem.readFile({
+      path
+    })
+    return 'data:image/jpeg;base64,'+result.data;
+  }
+  findImage(id:number){
+    var aux =this.serie_base64.find((s)=>s.serie==id)
+    console.log(JSON.stringify(aux));
+    
+    return aux.base64;
   }
 }

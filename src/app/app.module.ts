@@ -16,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { ComponentsModule } from './components/components.module';
 import { AppVersion } from '@ionic-native/app-version/ngx';
 import { FileChooser } from '@ionic-native/file-chooser/ngx';
+import { FilePath } from '@ionic-native/file-path/ngx';
 
 
 @NgModule({
@@ -35,6 +36,7 @@ import { FileChooser } from '@ionic-native/file-chooser/ngx';
     StatusBar,
     ImagePicker,
     AppVersion,
+    FilePath,
     FileChooser,
     { 
       provide: RouteReuseStrategy, 

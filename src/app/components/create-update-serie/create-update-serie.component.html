@@ -25,11 +25,6 @@
       <ion-label position="floating">Página web</ion-label>
       <ion-input type="text" placeholder="Escribe la página donde ves la serie" [(ngModel)]="webPage"></ion-input>
     </ion-item>
-    <ion-button (click)="chooseImg()" shape="round">
-      <ion-icon slot="start" name="image-outline"></ion-icon>
-      Agregar imagen
-    </ion-button>
-
     <div *ngIf="state=='initiated'">
       <p>Hasta donde has visto</p>
       <ion-item>
@@ -44,6 +39,13 @@
         <ion-label position="floating">Episodios por temporada</ion-label>
         <ion-input type="number" [(ngModel)]="episodes_seasons" (ionBlur)="verify()"></ion-input>
       </ion-item>
+    </div>
+    <ion-button (click)="chooseImg()" shape="round">
+      <ion-icon slot="start" name="image-outline"></ion-icon>
+      Agregar imagen
+    </ion-button><br>
+    <div *ngIf="imgBase64" style="text-align: center;">
+      <img [src]="imgBase64" width="300px" alt="Imagen de la serie">
     </div>
   </ion-list>
 </ion-content>

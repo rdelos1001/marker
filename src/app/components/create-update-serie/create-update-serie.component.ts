@@ -1,11 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { ImagePicker } from '@ionic-native/image-picker/ngx';
+import { Component, Input, OnInit, Sanitizer } from '@angular/core';
+import { FilePath } from '@ionic-native/file-path/ngx';
+import { ImagePicker, OutputType } from '@ionic-native/image-picker/ngx';
 import { ModalController } from '@ionic/angular';
-import { Saga } from 'src/app/interfaces/saga';
 import { Season } from 'src/app/interfaces/season';
-import { Serie } from 'src/app/interfaces/serie';
 import { DatabaseService } from 'src/app/services/database.service';
 import { UtilsService } from 'src/app/services/utils.service';
+import { Filesystem } from '@capacitor/filesystem';
 
 @Component({
   selector: 'app-create-update-serie',
@@ -17,7 +17,8 @@ export class CreateUpdateSerieComponent implements OnInit {
   @Input() id_serie:number;
 
   name:string;
-  image:string;
+  imagePath:string=null;
+  imgBase64
   state:string;
   webPage:string;
   seasonsList:Season[];
@@ -31,9 +32,20 @@ export class CreateUpdateSerieComponent implements OnInit {
   
   ngOnInit() {
     if(this.id_serie){
-      this._database.getSerie(this.id_serie).then(async (serie)=>{        
+      this._database.getSerie(this.id_serie).then(async (serie)=>{
+        if(serie.image){
+          if(serie.image=="/assets/shapes.svg"){
+            this.imgBase64="/assets/shapes.svg";
+          }else{
+            Filesystem.readFile({
+              path:serie.image
+            }).then((base64)=>{   
+              this.imgBase64='data:image/jpeg;base64,'+base64.data;
+            })
+          }          
+        }     
         this.name=serie.name;
-        this.image=serie.image;
+        this.imagePath=serie.image;
         this.state=serie.state;
         this.webPage=serie.webPage;
         await this._database.loadSeasons(serie.id);
@@ -45,7 +57,8 @@ export class CreateUpdateSerieComponent implements OnInit {
         });
       })
     }else{
-      this.state='pending'
+      this.state='pending';
+      this.imgBase64="/assets/shapes.svg"
     }
   }
   verify(){
@@ -57,29 +70,39 @@ export class CreateUpdateSerieComponent implements OnInit {
     }
   }
   chooseImg(){
-    this.imagePicker.hasReadPermission().then(async(result)=>{
-      
-      if(!result){
-        await this.imagePicker.requestReadPermission();
+    this.imagePicker.requestReadPermission().then(async(result)=>{
+      if(result=="OK"){
+        var imageResult:string[]=await this.imagePicker.getPictures({
+          quality:100,
+          maximumImagesCount:1,
+          outputType:OutputType.DATA_URL
+        });        
+        this.imgBase64='data:image/jpeg;base64,'+imageResult[0];
       }
-      
-      this.imagePicker.getPictures({
-        maximumImagesCount:1,
-        quality:100
-      }).then((value)=>{
-        this.image= value        
-      })
     })
   }
   cancel(){
     this.modalController.dismiss();
   }
-  add(){
+  async add(){
     if(this.name && this.name.length>0){
-      let data:any={}
+      if(this.imgBase64){
+        var permissionStatus =await Filesystem.requestPermissions();
+        if(permissionStatus.publicStorage=="granted"){
+          var hoy=new Date();
+          var hoyStr:string=""+ hoy.getSeconds() + hoy.getMinutes() + hoy.getHours() + hoy.getDate() + hoy.getMonth() + hoy.getFullYear();
+          this.imagePath=`file:///storage/emulated/0/Marker/${hoyStr}.jpg`;
+          Filesystem.writeFile({
+            data:this.imgBase64,
+            path:this.imagePath,
+            recursive:true
+          })
+        }
+      }
+      let data:any={};
       data.serie={
         name:this.name,
-        image:this.image,
+        image:this.imagePath,
         state:this.state,
         webPage:this.webPage
       };
@@ -90,8 +113,7 @@ export class CreateUpdateSerieComponent implements OnInit {
           episodes_seasons:this.episodes_seasons
         }
       }
-      if(this.id_serie){ data.serie.id=this.id_serie}
-      
+      if(this.id_serie){ data.serie.id=this.id_serie}      
       this.modalController.dismiss(data)
     }
     else{

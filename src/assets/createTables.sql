@@ -5,7 +5,7 @@ DROP TABLE IF EXISTS season; */
 CREATE TABLE IF NOT EXISTS serie(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name text not null unique,
-    image text default 'assets/icon/default-image.png',
+    image text default '/assets/shapes.svg',
     state text default 'pending',
     webPage text
 );

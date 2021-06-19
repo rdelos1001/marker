@@ -22,7 +22,7 @@
       <ion-card-subtitle>{{serie.state=='initiated'?'Empezada':'Pendiente'}}</ion-card-subtitle>
     </ion-card-header>
     <ion-card-content>
-      <img src="/assets/shapes.svg" width="100%" alt="">
+      <img [src]="findImage(serie.id)" width="100%" alt="">
       <ion-button (click)="inspect(serie)" expand="block" fill="clear" shape="round">
         Inspect Serie
       </ion-button>
