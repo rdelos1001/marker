@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Filesystem } from '@capacitor/filesystem';
-import { ModalController } from '@ionic/angular';
+import { AnimationController, ModalController } from '@ionic/angular';
 import { CreateUpdateSerieComponent } from 'src/app/components/create-update-serie/create-update-serie.component';
 import { Season } from 'src/app/interfaces/season';
 import { Serie } from 'src/app/interfaces/serie';
@@ -31,7 +31,8 @@ export class SeriePage implements OnInit {
         this._database.loadSeries();
         this._database.getSeries().subscribe(async (data)=>{
           if(data){
-            for (const s of data) { 
+            this.serie_base64=[];
+            for (const s of data) {
               let base64= await this.getImageData(s.image);
               this.serie_base64.push({
                 serie:s.id,
@@ -75,7 +76,7 @@ export class SeriePage implements OnInit {
             })
           }
         }else{
-          var season=await this._database.addSeason({
+          await this._database.addSeason({
             number:1,
             serie,
             totalEpisodes:1,
@@ -89,7 +90,7 @@ export class SeriePage implements OnInit {
       .finally(()=>{
         this._database.loadSeries();
         this._utils.hideLoading();
-      });      
+      });
     }
   }
   async edit(serie:Serie){
@@ -132,11 +133,10 @@ export class SeriePage implements OnInit {
           this._database.addSeason(season)
         }
       }
-      this.serieList[serieIndex]=serie;
-      this.getImageData(serie.image).then((base64)=>{
-        this.serie_base64[serieIndex].base64=base64
-      })
-      this._database.loadSeasons(serie.id)
+      var base64 = await this.getImageData(serie.image);
+      var index = this.serie_base64.findIndex(sb=>sb.serie==serie.id);
+      this.serie_base64[index].base64=base64;
+      this._database.loadSeasons(serie.id);
       this._utils.hideLoading();
     }
   }
@@ -144,10 +144,16 @@ export class SeriePage implements OnInit {
     var { role }=await this._utils.presentAlertConfirm("Aviso","¿Estas seguro que desea eliminar a "+serie.name+"?");
     if(role=="ok"){
       this._database.deleteSerie(serie.id);
+      this._database.loadSeries();
+      var index=this.serieList.findIndex((s)=>s==serie);
+      this.serieList.splice(index,1);
+      this.serie_base64.splice(index,1);
     }
   }
   inspect(serie:Serie){
-    this.router.navigate(['/season',serie.id])
+    setTimeout(()=>{
+      this.router.navigate(['/season',serie.id])
+    },500)
   }
   async getImageData(path:string):Promise<string>{
     if(path=="/assets/shapes.svg"){
@@ -159,9 +165,7 @@ export class SeriePage implements OnInit {
     return 'data:image/jpeg;base64,'+result.data;
   }
   findImage(id:number){
-    var aux =this.serie_base64.find((s)=>s.serie==id)
-    console.log(JSON.stringify(aux));
-    
+    var aux =this.serie_base64.find((s)=>s.serie==id)    
     return aux.base64;
   }
 }

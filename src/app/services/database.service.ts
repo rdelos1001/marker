@@ -79,7 +79,7 @@ export class DatabaseService {
       serie.name=resp.rows.item(0).name;
       serie.image=resp.rows.item(0).image;
       serie.state=resp.rows.item(0).state;
-      if(serie.webPage)serie.webPage=resp.rows.item(0).webPage;
+      serie.webPage=serie.webPage=resp.rows.item(0).webPage;
       return serie;
     }else{
       return null;
@@ -193,18 +193,23 @@ export class DatabaseService {
   async updateSeason(season:Season):Promise<Season>{
     if(!season.id)throw new Error("No hay id de temporada");
 
-    var sql="UPDATE season SET id_serie=?, number=?, totalEpisodes=?, viewedEpisodes=? WHERE id=?";
+    var sql="UPDATE season SET id_serie=?, number=?, webPage=?, totalEpisodes=?, viewedEpisodes=? WHERE id=?";
+
+    if(!season.webPage){
+      sql=sql.replace(/\, webPage=\?/,"");
+    }
 
     if(!season.totalEpisodes){
-      sql=sql.replace(/\, totalEpisodes=\?\,/,"");
+      sql=sql.replace(/\, totalEpisodes=\?/,"");
     }
     if(!season.viewedEpisodes){
-      sql=sql.replace(/\, viewedEpisodes=\?\,/,"");
+      sql=sql.replace(/\, viewedEpisodes=\?/,"");
     }
 
     let params=[];
     params.push(season.serie.id);
     params.push(season.number);
+    if(season.webPage)params.push(season.webPage);
     if(season.totalEpisodes)params.push(season.totalEpisodes)
     if(season.viewedEpisodes)params.push(season.viewedEpisodes)
     params.push(season.id);

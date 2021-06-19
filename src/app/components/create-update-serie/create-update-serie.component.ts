@@ -31,9 +31,10 @@ export class CreateUpdateSerieComponent implements OnInit {
               private _utils:UtilsService,
               private _database:DatabaseService) { }
   
-  ngOnInit() {
+  async ngOnInit() {
     if(this.id_serie){
-      this._database.getSerie(this.id_serie).then(async (serie)=>{
+      await this._utils.presentLoading("Cargando datos...");
+      this._database.getSerie(this.id_serie).then(async (serie)=>{        
         if(serie.image){
           if(serie.image==this.DEFAULT_IMAGE){
             this.imgBase64=this.DEFAULT_IMAGE;
@@ -58,6 +59,7 @@ export class CreateUpdateSerieComponent implements OnInit {
           this.seasonsViewed   =data[data.length-1].number;
         });
       })
+      this._utils.hideLoading();
     }else{
       this.state='pending';
       this.imgBase64=this.DEFAULT_IMAGE

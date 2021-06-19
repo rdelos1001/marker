@@ -29,8 +29,7 @@ export class MenuComponent implements OnInit {
                 path:'season/'+s.id
               })
             })
-            this.pages=this.removeDuplicates(this.pages);
-          }else{
+            this.pages=this.removeDuplicates(this.pages);            
           }
         })
       }
@@ -45,7 +44,7 @@ export class MenuComponent implements OnInit {
     });
     return uniqueArray;
   }
-  navigate(path:string){
+  navigate(path:string){    
     this.router.navigate([path])
   }
 }

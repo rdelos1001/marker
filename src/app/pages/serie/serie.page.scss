@@ -3,3 +3,8 @@ ion-fab-button{
     --color:black;
     --box-shadow:none;
 }
+ion-card:hover{
+    transform: scale(1.05);
+    background-color: lightgrey;
+    transition-duration: 0.5s;
+}

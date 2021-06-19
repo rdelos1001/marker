@@ -18,11 +18,11 @@ export class SeasonPage implements OnInit {
               private modalController: ModalController) { }
   id_serie:number;
   ngOnInit() {
-    this.id_serie=parseInt(this.activatedRouted.snapshot.paramMap.get('id_serie'))
+    this.id_serie=parseInt(this.activatedRouted.snapshot.paramMap.get('id_serie'))    
     this._database.loadSeasons(this.id_serie);
 
-    this._database.getSeasons().subscribe((data)=>{     
-      if(data && data.length>0 && !this.seasonsList){
+    this._database.getSeasons().subscribe((data)=>{         
+      if(data && data.length>0 && data[0].serie.id==this.id_serie && !this.seasonsList){
         this.seasonsList=data;
         this.seasonsList.sort((a,b)=>b.number-a.number);
       }
