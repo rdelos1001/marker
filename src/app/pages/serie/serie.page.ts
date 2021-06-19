@@ -16,9 +16,10 @@ import { UtilsService } from 'src/app/services/utils.service';
 export class SeriePage implements OnInit {
   filterSerie:string="";
   serieList:Serie[];
-  serie_base64:{
+  serie_data:{
     serie:number,
-    base64:string
+    base64:string,
+    nextEpisode:string
   }[]=[]
   constructor(private _database:DatabaseService,
               private modalController: ModalController,
@@ -31,12 +32,14 @@ export class SeriePage implements OnInit {
         this._database.loadSeries();
         this._database.getSeries().subscribe(async (data)=>{
           if(data){
-            this.serie_base64=[];
+            this.serie_data=[];
             for (const s of data) {
               let base64= await this.getImageData(s.image);
-              this.serie_base64.push({
+              let nextEpisode = await this._database.getNextEpisodeSerie(s);
+              this.serie_data.push({
                 serie:s.id,
-                base64
+                base64,
+                nextEpisode
               });
             }
             this.serieList=data;
@@ -133,10 +136,8 @@ export class SeriePage implements OnInit {
           this._database.addSeason(season)
         }
       }
-      var base64 = await this.getImageData(serie.image);
-      var index = this.serie_base64.findIndex(sb=>sb.serie==serie.id);
-      this.serie_base64[index].base64=base64;
-      this._database.loadSeasons(serie.id);
+
+      this._database.loadSeries();
       this._utils.hideLoading();
     }
   }
@@ -145,9 +146,9 @@ export class SeriePage implements OnInit {
     if(role=="ok"){
       this._database.deleteSerie(serie.id);
       this._database.loadSeries();
-      var index=this.serieList.findIndex((s)=>s==serie);
-      this.serieList.splice(index,1);
-      this.serie_base64.splice(index,1);
+      Filesystem.deleteFile({
+        path:serie.image
+      });
     }
   }
   inspect(serie:Serie){
@@ -165,7 +166,10 @@ export class SeriePage implements OnInit {
     return 'data:image/jpeg;base64,'+result.data;
   }
   findImage(id:number){
-    var aux =this.serie_base64.find((s)=>s.serie==id)    
+    var aux =this.serie_data.find((s)=>s.serie==id)    
     return aux.base64;
+  }
+  findNextEpisode(serie:Serie):string{
+    return this.serie_data.find((s)=>s.serie==serie.id).nextEpisode;
   }
 }

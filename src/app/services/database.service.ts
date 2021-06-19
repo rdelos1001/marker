@@ -232,10 +232,18 @@ export class DatabaseService {
   getNextEpisode(season:Season){
     var nextEpisode:string="";
     if(season.totalEpisodes==season.viewedEpisodes){
-      nextEpisode=(season.number+1)+"x1";
+      nextEpisode=(season.number+1)+"x01";
+    }else if(season.viewedEpisodes<9){
+      nextEpisode="0"+(season.viewedEpisodes+1);
     }else{
       nextEpisode=(season.viewedEpisodes+1)+"";
     }
     return nextEpisode;
+  }
+  async getNextEpisodeSerie(serie:Serie){
+   await this.loadSeasons(serie.id)
+   var seasons =this.seasons.getValue(); 
+    seasons.sort((a,b)=>b.number-a.number);
+    return seasons[0].number+"x" +this.getNextEpisode(seasons[0]);
   }
 }

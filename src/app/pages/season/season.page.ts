@@ -43,7 +43,7 @@ export class SeasonPage implements OnInit {
     if(data){
       this._database.updateSeason(data);
       this._database.loadSeasons(this.id_serie);
-      window.location.reload()
     }
+    window.location.reload();
   }
 }

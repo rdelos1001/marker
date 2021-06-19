@@ -6,5 +6,13 @@ ion-fab-button{
 ion-card:hover{
     transform: scale(1.05);
     background-color: lightgrey;
-    transition-duration: 0.5s;
+    transition-duration: 0.35s;
+}
+ion-item{
+    position: sticky; 
+    top: 0; 
+    z-index: 100;
+    ion-icon{
+        margin-right: 1pc;
+    }
 }

@@ -1,10 +1,12 @@
 <app-header title="Series"></app-header>
 
 <ion-content>
-  <ion-input type="text" placeholder="Encuentra tu serie" [(ngModel)]="filterSerie"></ion-input>
+  <ion-item>
+    <ion-icon name="search-outline"></ion-icon>
+    <ion-input type="text" placeholder="Encuentra tu serie" [(ngModel)]="filterSerie"></ion-input>
+  </ion-item>
   <ion-card *ngFor="let serie of serieList | filter:filterSerie">
     <ion-card-header>
-
       <ion-fab horizontal="end">
         <ion-fab-button>
           <ion-icon name="menu-outline"></ion-icon>
@@ -19,6 +21,7 @@
       </ion-fab> 
       <div class="header" (click)="inspect(serie)">
         <ion-card-title><b>{{serie.name}}</b></ion-card-title>
+        <h1>{{findNextEpisode(serie)}}</h1>
         <ion-card-subtitle>{{serie.state=='initiated'?'Empezada':'Pendiente'}}</ion-card-subtitle>
         <ion-card-subtitle *ngIf="serie.webPage">Página web: <b>{{serie.webPage}}</b></ion-card-subtitle>
       </div>
