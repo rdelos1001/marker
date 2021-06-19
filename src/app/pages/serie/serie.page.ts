@@ -102,16 +102,12 @@ export class SeriePage implements OnInit {
     await modal.present();
     const { data }= await modal.onWillDismiss();
     if(data){
-      await this._utils.presentLoading("Actualizando serie...")
+      await this._utils.presentLoading("Actualizando serie...");
+      let serieIndex=this.serieList.findIndex((s)=>s==serie);
       serie = await this._database.updateSerie(data.serie);
       await this._database.loadSeasons(data.serie.id);
       var seasons= this._database.seasons.getValue();
       if(data.viewed && data.serie.state=="initiated"){
-        /*data.viewed={
-          seasonsViewed:this.seasonsViewed,
-          episodesViewed:this.episodesViewed,
-          episodes_seasons:this.episodes_seasons
-        } */
         var season= seasons[seasons.length-1]
         if(seasons[seasons.length-1].number==data.viewed.seasonsViewed){
           season.viewedEpisodes=data.viewed.episodesViewed;
@@ -137,6 +133,7 @@ export class SeriePage implements OnInit {
           this._database.addSeason(season)
         }
       }
+      this.serieList[serieIndex]=serie;
       this._database.loadSeasons(serie.id)
       this._utils.hideLoading();
     }

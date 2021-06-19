@@ -17,15 +17,13 @@
           <ion-fab-button color="danger" (click)="del(serie)"><ion-icon name="trash-bin-outline"></ion-icon></ion-fab-button>
         </ion-fab-list>
       </ion-fab> 
-        
-      <ion-card-title>{{serie.name}}</ion-card-title>
-      <ion-card-subtitle>{{serie.state=='initiated'?'Empezada':'Pendiente'}}</ion-card-subtitle>
+      <div (click)="inspect(serie)">
+        <ion-card-title>{{serie.name}}</ion-card-title>
+        <ion-card-subtitle>{{serie.state=='initiated'?'Empezada':'Pendiente'}}</ion-card-subtitle>
+      </div>
     </ion-card-header>
-    <ion-card-content>
-      <img [src]="findImage(serie.id)" width="100%" alt="">
-      <ion-button (click)="inspect(serie)" expand="block" fill="clear" shape="round">
-        Inspect Serie
-      </ion-button>
+    <ion-card-content (click)="inspect(serie)">
+      <img [src]="findImage(serie.id)" width="100%" alt="imagen de la serie" >
     </ion-card-content>
   </ion-card>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
