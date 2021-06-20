@@ -10,7 +10,7 @@ export const enterAnimation = (baseEl:HTMLElement, opts?:any):Animation =>{
         .duration(DURATION)
         .easing("ease-in")
         .fromTo('opacity',1,1)
-        .fromTo("transform","translateX(100%)","translateX(0%)")
+        .fromTo("transform","translateX(110%)","translateX(0%)")
 
         const leavingAnimation= animationController.create()
         .addElement(opts.leavingEl)
@@ -25,8 +25,7 @@ export const enterAnimation = (baseEl:HTMLElement, opts?:any):Animation =>{
         .duration(DURATION)
         .easing("ease-in")
         .fromTo('opacity',1,1)
-        .fromTo("transform","translateX(-100%)","translateX(0%)")
-
+        .fromTo("transform","translateX(-110%)","translateX(0%)")
 
         const leavingAnimation= animationController.create()
         .addElement(opts.leavingEl)

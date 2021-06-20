@@ -8,6 +8,12 @@
     <ion-item>
       <ion-label>Autor: Raúl De los Santos Cabrera</ion-label>
     </ion-item>
+    <ion-item button (click)="downloadSQL()">
+      <ion-label>Descargar SQL</ion-label>
+    </ion-item>
+    <ion-item button (click)="importSQL()">
+     <ion-label position="inline">Importar SQL <ion-text color="danger">(Se eliminarán los datos actuales)</ion-text></ion-label>
+    </ion-item>
     <ion-item button (click)="openIcon8()">
       <ion-label>Icons by Icons8.com</ion-label>
     </ion-item>

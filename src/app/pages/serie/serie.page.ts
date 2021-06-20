@@ -7,7 +7,6 @@ import { Season } from 'src/app/interfaces/season';
 import { Serie } from 'src/app/interfaces/serie';
 import { DatabaseService } from 'src/app/services/database.service';
 import { UtilsService } from 'src/app/services/utils.service';
-import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 @Component({
   selector: 'app-serie',
@@ -15,7 +14,6 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
   styleUrls: ['./serie.page.scss'],
 })
 export class SeriePage implements OnInit {
-  @ViewChildren("iFabs") iFabs:QueryList<IonFab>;
   filterSerie:string="";
   serieList:Serie[];
   serie_data:{
@@ -25,16 +23,15 @@ export class SeriePage implements OnInit {
   }[]=[]
   constructor(private _database:DatabaseService,
               private modalController: ModalController,
-              private router:Router,
-              private _utils:UtilsService,
-              private statusBar: StatusBar) { }
+              private _utils:UtilsService) { }
 
+  ionViewWillEnter(){
+    this._database.loadSeries();
+  }
   ngOnInit() {
-    this.statusBar.backgroundColorByHexString("#3880ff")
-    this._database.getDatabaseState().subscribe((ready:boolean)=>{
+    this._database.getDatabaseState().subscribe(async (ready:boolean)=>{
       if(ready){
-        this._database.loadSeries();
-        this._database.getSeries().subscribe(async (data)=>{
+        this._database.getSeries().subscribe(async (data:Serie[])=>{
           if(data){
             this.serie_data=[];
             for (const s of data) {
@@ -102,7 +99,6 @@ export class SeriePage implements OnInit {
     }
   }
   async edit(serie:Serie){
-    this.closeFabs();
     const modal = await this.modalController.create({
       component: CreateUpdateSerieComponent,
       componentProps: { id_serie:serie.id }
@@ -147,7 +143,6 @@ export class SeriePage implements OnInit {
     }
   }
   async del(serie:Serie){
-    this.closeFabs();
     var { role }=await this._utils.presentAlertConfirm("Aviso","¿Estas seguro que desea eliminar a "+serie.name+"?");
     if(role=="ok"){
       await this._database.deleteSerie(serie.id);
@@ -159,25 +154,27 @@ export class SeriePage implements OnInit {
   }
   async getImageData(path:string):Promise<string>{
     if(path=="/assets/shapes.svg"){
-      return "/assets/shapes.svg";
+      return path;
     }
     var result = await Filesystem.readFile({
       path
     })
     return 'data:image/jpeg;base64,'+result.data;
   }
-  findImage(id:number){
-    var aux =this.serie_data.find((s)=>s.serie==id)    
-    return aux.base64;
+  findImage(id:number):string{
+    var aux =this.serie_data.find((s)=>s.serie==id)   
+    if(aux){
+      return aux.base64;
+    }else{
+      return null;
+    }
   }
   findNextEpisode(serie:Serie):string{
-    return this.serie_data.find((s)=>s.serie==serie.id).nextEpisode;
-  }
-  closeFabs(){
-    this.iFabs.forEach((fab)=>{
-      if(fab.activated){
-        fab.close();
-      }
-    })
+    var result = this.serie_data.find((s)=>s.serie==serie.id);
+    if(result){
+      return result.nextEpisode
+    }else{
+      return null;
+    }
   }
 }

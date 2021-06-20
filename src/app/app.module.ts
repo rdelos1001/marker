@@ -19,6 +19,7 @@ import { FileChooser } from '@ionic-native/file-chooser/ngx';
 import { FilePath } from '@ionic-native/file-path/ngx';
 import { enterAnimation } from './animations/nav-animation';
 import { enterFromRightAnimation,leaveToRightAnimation } from './animations/modal-animation';
+import { FileOpener } from '@ionic-native/file-opener/ngx';
 
 
 @NgModule({
@@ -44,6 +45,7 @@ import { enterFromRightAnimation,leaveToRightAnimation } from './animations/moda
     AppVersion,
     FilePath,
     FileChooser,
+    FileOpener,
     { 
       provide: RouteReuseStrategy, 
       useClass: IonicRouteStrategy 

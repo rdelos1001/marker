@@ -6,6 +6,7 @@ import { Season } from 'src/app/interfaces/season';
 import { DatabaseService } from 'src/app/services/database.service';
 import { UtilsService } from 'src/app/services/utils.service';
 import { Filesystem } from '@capacitor/filesystem';
+import { FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-create-update-serie',
@@ -52,12 +53,12 @@ export class CreateUpdateSerieComponent implements OnInit {
         this.state=serie.state;
         this.webPage=serie.webPage;
         await this._database.loadSeasons(serie.id);
-        this._database.getSeasons().subscribe(data=>{
-          this.seasonsList=data;        
-          this.episodes_seasons=data[data.length-1].totalEpisodes;
-          this.episodesViewed  =data[data.length-1].viewedEpisodes;
-          this.seasonsViewed   =data[data.length-1].number;
-        });
+        var data = await this._database.seasons.getValue();
+        data.sort((a,b)=>b.number-a.number);
+        this.seasonsList=data;        
+        this.episodes_seasons=data[0].totalEpisodes;
+        this.episodesViewed  =data[0].viewedEpisodes;
+        this.seasonsViewed   =data[0].number;
       })
       this._utils.hideLoading();
     }else{

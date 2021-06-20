@@ -3,10 +3,9 @@ import { Injectable } from '@angular/core';
 import { SQLitePorter } from '@ionic-native/sqlite-porter/ngx';
 import { SQLite, SQLiteObject } from '@ionic-native/sqlite/ngx';
 import { Platform } from '@ionic/angular';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Season } from '../interfaces/season';
 import { Serie } from '../interfaces/serie';
-import { UtilsService } from './utils.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,8 +19,7 @@ export class DatabaseService {
   constructor(private ptl:Platform,
               private sqlLite:SQLite,
               private sqlLitePorter:SQLitePorter,
-              private http:HttpClient,
-              private _utils:UtilsService) { 
+              private http:HttpClient) { 
                 this.ptl.ready().then(()=>{
                   this.sqlLite.create({
                     name:'marker.db',
@@ -223,20 +221,14 @@ export class DatabaseService {
     return season;
   }
 
-  exportSQL():Promise<string>{
-    return this.sqlLitePorter.exportDbToSql(this.db)
-  }
-  importSQL(data:string){
-    return this.sqlLitePorter.importSqlToDb(this.db,data);
-  }
   getNextEpisode(season:Season){
     var nextEpisode:string="";
     if(season.totalEpisodes==season.viewedEpisodes){
-      nextEpisode=(season.number+1)+"x01";
+      nextEpisode+="01";
     }else if(season.viewedEpisodes<9){
-      nextEpisode="0"+(season.viewedEpisodes+1);
+      nextEpisode+="0"+(season.viewedEpisodes+1);
     }else{
-      nextEpisode=(season.viewedEpisodes+1)+"";
+      nextEpisode+=(season.viewedEpisodes+1)+"";
     }
     return nextEpisode;
   }
@@ -244,6 +236,13 @@ export class DatabaseService {
    await this.loadSeasons(serie.id)
    var seasons =this.seasons.getValue(); 
     seasons.sort((a,b)=>b.number-a.number);
-    return this.getNextEpisode(seasons[0]);
+    return seasons[0].number+"x" +this.getNextEpisode(seasons[0]);
+  }
+  downloadSQL():Promise<string>{
+    return this.sqlLitePorter.exportDbToSql(this.db);
+  }
+ async importSQL(sql:string){
+    await this.sqlLitePorter.wipeDb(this.db)
+    return this.sqlLitePorter.importSqlToDb(this.db,sql);
   }
 }

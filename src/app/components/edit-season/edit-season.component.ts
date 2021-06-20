@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 import { ModalController } from '@ionic/angular';
 import { Season } from 'src/app/interfaces/season';
 import { DatabaseService } from 'src/app/services/database.service';

@@ -26,11 +26,8 @@ export class SeasonPage implements OnInit {
       if(data && data.length>0 && data[0].serie.id==this.id_serie){
         this.seasonsList=data;
         this.seasonsList.sort((a,b)=>b.number-a.number);
-      }
-      console.log("seasonsList-> "+JSON.stringify(this.seasonsList));
-      
+      }      
     })
-    
   }
   async edit(season:Season){
     const modal = await this.modalController.create({
@@ -43,7 +40,6 @@ export class SeasonPage implements OnInit {
   
     await modal.present();
     const { data } = await modal.onWillDismiss();
-    console.log("DATA-> "+JSON.stringify(data));
     
     if(data && data=="delete" && this.seasonsList.length==1 ){
       this._utils.presentAlert("Error","No puedes borrar todas las temporadas");
