@@ -1,8 +1,14 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="cancel()" fill="clear" shape="round">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Editar temporada de {{serieName}}</ion-title>
+  </ion-toolbar>
+</ion-header>
 <ion-content>
-  <ion-button (click)="cancel()" fill="clear" shape="round">
-    <ion-icon name="close-outline"></ion-icon>
-  </ion-button>
-  <h1>Editar temporada {{season.number}} de la serie '{{serieName}}'</h1>
   <ion-item>
     <ion-label>Temporada</ion-label>
     <ion-input type="number" readonly [(ngModel)]="season.number"></ion-input>

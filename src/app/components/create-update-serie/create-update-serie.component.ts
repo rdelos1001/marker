@@ -1,7 +1,7 @@
-import { Component, Input, OnInit, Sanitizer } from '@angular/core';
+import { Component, Input, OnInit, Sanitizer, ViewChild } from '@angular/core';
 import { FilePath } from '@ionic-native/file-path/ngx';
 import { ImagePicker, OutputType } from '@ionic-native/image-picker/ngx';
-import { ModalController } from '@ionic/angular';
+import { IonInput, ModalController } from '@ionic/angular';
 import { Season } from 'src/app/interfaces/season';
 import { DatabaseService } from 'src/app/services/database.service';
 import { UtilsService } from 'src/app/services/utils.service';
@@ -15,7 +15,7 @@ import { Filesystem } from '@capacitor/filesystem';
 export class CreateUpdateSerieComponent implements OnInit {
   private DEFAULT_IMAGE="/assets/shapes.svg";
   @Input() id_serie:number;
-
+  @ViewChild("inputName")inputName:IonInput;
   name:string;
   imagePath:string=null;
   imgBase64:string;

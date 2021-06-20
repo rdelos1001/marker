@@ -244,6 +244,6 @@ export class DatabaseService {
    await this.loadSeasons(serie.id)
    var seasons =this.seasons.getValue(); 
     seasons.sort((a,b)=>b.number-a.number);
-    return seasons[0].number+"x" +this.getNextEpisode(seasons[0]);
+    return this.getNextEpisode(seasons[0]);
   }
 }

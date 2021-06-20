@@ -49,4 +49,11 @@ export class UtilsService {
   hideLoading(){
     this.loadingController.dismiss()
   }
+  async presentToast(message:string,t:number=2000) {
+    const toast = await this.toastController.create({
+      message,
+      duration: t
+    });
+    toast.present();
+  }
 }

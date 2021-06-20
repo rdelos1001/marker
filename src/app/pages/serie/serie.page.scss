@@ -15,6 +15,9 @@ ion-item{
         margin-right: 1pc;
     }
 }
+ion-fab{
+    z-index: 90;
+}
 @keyframes grow {
     50% {
         transform: scale(1.03);
