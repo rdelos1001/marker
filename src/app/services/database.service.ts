@@ -230,13 +230,20 @@ export class DatabaseService {
     }else{
       nextEpisode+=(season.viewedEpisodes+1)+"";
     }
+    if(season.totalEpisodes==season.viewedEpisodes){
+      nextEpisode=(season.number+1)+"x"+nextEpisode
+    }
     return nextEpisode;
   }
   async getNextEpisodeSerie(serie:Serie){
    await this.loadSeasons(serie.id)
    var seasons =this.seasons.getValue(); 
     seasons.sort((a,b)=>b.number-a.number);
-    return seasons[0].number+"x" +this.getNextEpisode(seasons[0]);
+    if(seasons[0].totalEpisodes!=seasons[0].viewedEpisodes){
+      return seasons[0].number+"x" +this.getNextEpisode(seasons[0]);
+    }else{
+      return this.getNextEpisode(seasons[0])
+    }
   }
   downloadSQL():Promise<string>{
     return this.sqlLitePorter.exportDbToSql(this.db);
