@@ -41,8 +41,8 @@ export class CreateUpdateSerieComponent implements OnInit {
             this.imgBase64=this.DEFAULT_IMAGE;
           }else{
             this.lastImagePath=serie.image;
-            Filesystem.checkPermissions().then((value)=>{
-              if(value.publicStorage=="granted"){
+            this._utils.requestFileSystemPermission().then((accepted)=>{
+              if(accepted){
                 Filesystem.readFile({
                   path:serie.image
                 }).then((base64)=>{   
@@ -67,11 +67,16 @@ export class CreateUpdateSerieComponent implements OnInit {
       this._utils.hideLoading();
     }else{
       this.state='pending';
-      this.imgBase64=this.DEFAULT_IMAGE
+      this.imgBase64=this.DEFAULT_IMAGE;
+      this.seasonsViewed=1;
+      this.episodesViewed=0;
+      this.episodes_seasons=1;
     }
   }
   verify(){
-    this.seasonsViewed= this.seasonsViewed<this.seasonsList.length? this.seasonsList.length:Number.parseInt(this.seasonsViewed+"");
+    console.error("VERIFY");
+    
+    this.seasonsViewed= this.seasonsList&& this.seasonsViewed<this.seasonsList.length? this.seasonsList.length:Number.parseInt(this.seasonsViewed+"");
     this.episodesViewed=this.episodesViewed<0?0:Number.parseInt(this.episodesViewed+"");
     this.episodes_seasons=this.episodes_seasons<0?0:Number.parseInt(this.episodes_seasons+"");
     if(this.episodesViewed>this.episodes_seasons){
@@ -97,8 +102,8 @@ export class CreateUpdateSerieComponent implements OnInit {
   async add(){
     if(this.name && this.name.length>0){
       if(this.imgBase64 && this.imgBase64!=this.DEFAULT_IMAGE){
-        var permissionStatus =await Filesystem.requestPermissions();
-        if(permissionStatus.publicStorage=="granted"){
+        var accepted =await this._utils.requestFileSystemPermission();
+        if(accepted){
           var hoy=new Date();
           var hoyStr:string=""+ hoy.getSeconds() + hoy.getMinutes() + hoy.getHours() + hoy.getDate() + hoy.getMonth() + hoy.getFullYear();
           this.imagePath=`file:///storage/emulated/0/Marker/${hoyStr}.jpg`;
@@ -121,7 +126,7 @@ export class CreateUpdateSerieComponent implements OnInit {
         state:this.state,
         webPage:this.webPage
       };
-      if(this.seasonsViewed && this.episodesViewed && this.episodes_seasons){
+      if(this.state="initiated"){
         data.viewed={
           seasonsViewed:this.seasonsViewed,
           episodesViewed:this.episodesViewed,

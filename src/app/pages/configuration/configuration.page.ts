@@ -33,9 +33,8 @@ export class ConfigurationPage implements OnInit {
   async downloadSQL(){
     var sql =await this._database.downloadSQL();
     sql=sql.replace(/file:\/\/\/storage\/emulated\/0\/Marker\/[0-9]+.jpg/g,"/assets/shapes.svg");
-    Filesystem.requestPermissions().then((value)=>{
-      
-      if(value.publicStorage=="granted"){
+    this._utils.requestFileSystemPermission().then((accepted)=>{
+      if(accepted){
         Filesystem.writeFile({
           data:sql,
           directory:Directory.Documents,
@@ -55,7 +54,8 @@ export class ConfigurationPage implements OnInit {
   async importSQL(){
     var { role }= await this._utils.presentAlertConfirm("Atención","Todos los datos actuales se eliminarán")
     if(role=="ok"){
-    this.fileChooser.open({mime:"application/sql"}).then((uri)=>{
+    this.fileChooser.open({mime:"application/sql"}).then(async(uri)=>{
+      if(await this._utils.requestFileSystemPermission())
       Filesystem.readFile({
         path:uri,
         encoding:Encoding.UTF8
