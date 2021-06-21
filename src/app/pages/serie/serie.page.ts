@@ -29,6 +29,18 @@ export class SeriePage implements OnInit {
     this._database.loadSeries();
   }
   ngOnInit() {
+    this._utils.requestFileSystemPermission().then(value=>{
+      if(!value){
+        this._utils.$filesystemPermision.subscribe((accepted:boolean)=>{
+          if(accepted && this.serieList.length>0){
+            this.serieList.forEach(async (s)=>{
+              var base64= await this.getImageData(s.image);
+              this.serie_data.find((sd)=>sd.base64=base64);
+            })
+          }
+        })
+      }
+    })
     this._database.getDatabaseState().subscribe(async (ready:boolean)=>{
       if(ready){
         this._database.getSeries().subscribe(async (data:Serie[])=>{
@@ -155,6 +167,10 @@ export class SeriePage implements OnInit {
   async getImageData(path:string):Promise<string>{
     if(path=="/assets/shapes.svg"){
       return path;
+    }
+    var permission=(await Filesystem.checkPermissions()).publicStorage;
+    if(permission!="granted"){
+      return "/assets/shapes.svg"
     }
     var result = await Filesystem.readFile({
       path

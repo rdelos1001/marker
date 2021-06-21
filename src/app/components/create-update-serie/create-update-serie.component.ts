@@ -41,11 +41,15 @@ export class CreateUpdateSerieComponent implements OnInit {
             this.imgBase64=this.DEFAULT_IMAGE;
           }else{
             this.lastImagePath=serie.image;
-            Filesystem.readFile({
-              path:serie.image
-            }).then((base64)=>{   
-              this.imgBase64='data:image/jpeg;base64,'+base64.data;
-            });
+            Filesystem.checkPermissions().then((value)=>{
+              if(value.publicStorage=="granted"){
+                Filesystem.readFile({
+                  path:serie.image
+                }).then((base64)=>{   
+                  this.imgBase64='data:image/jpeg;base64,'+base64.data;
+                });
+              }
+            })
           }          
         }     
         this.name=serie.name;
@@ -74,18 +78,19 @@ export class CreateUpdateSerieComponent implements OnInit {
       this.episodes_seasons=this.episodesViewed;
     }
   }
-  chooseImg(){
-    this.imagePicker.requestReadPermission().then(async(result)=>{
-      if(result=="OK"){
+  async chooseImg(){
+    this._utils.requestFileSystemPermission().then(async (value)=>{
+      if(value){
         var imageResult:string[]=await this.imagePicker.getPictures({
           quality:100,
           maximumImagesCount:1,
           outputType:OutputType.DATA_URL
-        });        
-        this.imgBase64='data:image/jpeg;base64,'+imageResult[0];
+        });
+        if(imageResult[0] && imageResult[0].length>1)this.imgBase64='data:image/jpeg;base64,'+imageResult[0];      
       }
     })
   }
+  
   cancel(){
     this.modalController.dismiss();
   }

@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
+import { Filesystem } from '@capacitor/filesystem';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 
 @Injectable({
@@ -6,6 +7,8 @@ import { AlertController, LoadingController, ToastController } from '@ionic/angu
 })
 export class UtilsService {
 
+  $filesystemPermision= new EventEmitter<boolean>(false);
+  
   constructor(private alertController: AlertController,
               private toastController: ToastController,
               private loadingController: LoadingController) { }
@@ -55,5 +58,23 @@ export class UtilsService {
       duration: t
     });
     toast.present();
+  }
+  requestFileSystemPermission():Promise<boolean>{
+    return new Promise<boolean>((resolve)=>{
+      Filesystem.checkPermissions().then(value=>{
+        if(value.publicStorage!="granted"){
+          Filesystem.requestPermissions().then(permission=>{
+            if(permission.publicStorage=="granted"){
+              this.$filesystemPermision.emit(true);
+              resolve(true);
+            }else{
+              resolve(false);
+            }
+          });
+        }else{
+          resolve(true);
+        }
+      })
+    })
   }
 }

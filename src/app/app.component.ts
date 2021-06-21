@@ -9,5 +9,5 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 export class AppComponent {
   constructor(private statusBar: StatusBar) { 
     this.statusBar.backgroundColorByHexString("#3880ff");
-   }
+  }
 }
