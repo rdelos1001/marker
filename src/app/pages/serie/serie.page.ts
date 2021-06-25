@@ -25,8 +25,10 @@ export class SeriePage implements OnInit {
               private modalController: ModalController,
               private _utils:UtilsService) { }
 
-  ionViewWillEnter(){
+  async ionViewWillEnter(){
+    await this._utils.presentLoading("Cargando series...")
     this._database.loadSeries();
+    this._utils.hideLoading();
   }
   ngOnInit() {
     this._utils.requestFileSystemPermission().then(value=>{
