@@ -37,8 +37,7 @@ export class EditSeasonComponent implements OnInit {
     }
   }
   async del(){
-    const { role } =await this._utils.presentAlertConfirm("Aviso",`¿Desea eliminar la temporada ${this.season.number} de la serie ${this.serieName}`)
-    if(role=="ok")
+    if(await this._utils.presentAlertConfirm("Aviso",`¿Desea eliminar la temporada ${this.season.number} de la serie ${this.serieName}`))
     this.modalController.dismiss("delete");
   }
   save(){

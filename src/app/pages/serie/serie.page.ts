@@ -110,53 +110,56 @@ export class SeriePage implements OnInit {
       });
     }
   }
-  async edit(serie:Serie){
+  async edit(originalSerie:Serie){
     const modal = await this.modalController.create({
       component: CreateUpdateSerieComponent,
-      componentProps: { id_serie:serie.id }
+      componentProps: { id_serie:originalSerie.id }
     });
     
     await modal.present();
     const { data }= await modal.onWillDismiss();
     if(data){
       await this._utils.presentLoading("Actualizando serie...");
-      serie = await this._database.updateSerie(data.serie);
-      if(data.viewed && data.serie.state=="initiated"){
-        await this._database.loadSeasons(data.serie.id);
-        var seasons= this._database.seasons.getValue();
-        var season= seasons[seasons.length-1]
-        if(seasons[seasons.length-1].number==data.viewed.seasonsViewed){
-          season.viewedEpisodes=data.viewed.episodesViewed;
-          season.totalEpisodes=data.viewed.episodes_seasons;
-        }else{
-          if(season.viewedEpisodes!=season.totalEpisodes){
-            season.viewedEpisodes=data.viewed.episodes_seasons;
-            season.totalEpisodes=data.viewed.episodes_seasons;
-          }
-        }
-        await this._database.updateSeason(season)
-        for (let i = seasons[seasons.length-1].number+1; i <= data.viewed.seasonsViewed; i++) {
-          var season:Season={
-            number:i,
-            serie,
-            totalEpisodes:data.viewed.episodes_seasons,
-          }
-          if(i == data.viewed.seasonsViewed){
-            season.viewedEpisodes=data.viewed.episodesViewed;
-          }else{
-            season.viewedEpisodes=data.viewed.episodes_seasons;
-          }
-          await this._database.addSeason(season)
-        }
-      }
+      if(originalSerie!=data.serie){
+        var updatedSerie = await this._database.updateSerie(data.serie);
+        if(data.viewed && updatedSerie.state=="initiated"){
+          await this._database.loadSeasons(updatedSerie.id);
+          var seasons= this._database.seasons.getValue();
+          seasons.sort((a,b)=>b.number-a.number);
+          var last_season= seasons[0];
+          if(last_season.number==data.viewed.seasonsViewed){
+            last_season.viewedEpisodes=data.viewed.episodesViewed;
+            last_season.totalEpisodes=data.viewed.episodes_seasons;
 
-      await this._database.loadSeries();
+          }else if(last_season.viewedEpisodes!=last_season.totalEpisodes){
+            last_season.viewedEpisodes=data.viewed.episodes_seasons;
+            last_season.totalEpisodes=data.viewed.episodes_seasons;
+          }
+          await this._database.updateSeason(last_season);
+          if(last_season.number!=data.viewed.seasonsViewed){
+            for (let i = last_season.number+1; i <= data.viewed.seasonsViewed; i++) {
+              
+              var seasonCreated:Season={
+                number:i,
+                serie: updatedSerie,
+                totalEpisodes:data.viewed.episodes_seasons,
+              }
+              if(i == data.viewed.seasonsViewed){
+                seasonCreated.viewedEpisodes=data.viewed.episodesViewed;
+              }else{
+                seasonCreated.viewedEpisodes=data.viewed.episodes_seasons;
+              }
+              await this._database.addSeason(seasonCreated);
+            }
+          }
+        }
+        await this._database.loadSeries();
+      }
       this._utils.hideLoading();
     }
   }
   async del(serie:Serie){
-    var { role }=await this._utils.presentAlertConfirm("Aviso","¿Estas seguro que desea eliminar a "+serie.name+"?");
-    if(role=="ok"){
+    if(await this._utils.presentAlertConfirm("Aviso","¿Estas seguro que desea eliminar a "+serie.name+"?")){
       await this._database.deleteSerie(serie.id);
       this._database.loadSeries();
       Filesystem.deleteFile({

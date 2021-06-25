@@ -6,7 +6,6 @@ import { UtilsService } from 'src/app/services/utils.service';
 import { FileChooser } from '@ionic-native/file-chooser/ngx';
 import { Browser } from '@capacitor/browser';
 import { FileOpener } from '@ionic-native/file-opener/ngx';
-import { IonicSafeString } from '@ionic/angular';
 @Component({
   selector: 'app-configuration',
   templateUrl: './configuration.page.html',
@@ -31,29 +30,29 @@ export class ConfigurationPage implements OnInit {
     Browser.open({url:"https://icons8.com"})
   }
   async downloadSQL(){
-    var sql =await this._database.downloadSQL();
-    sql=sql.replace(/file:\/\/\/storage\/emulated\/0\/Marker\/[0-9]+.jpg/g,"/assets/shapes.svg");
-    this._utils.requestFileSystemPermission().then((accepted)=>{
-      if(accepted){
-        Filesystem.writeFile({
-          data:sql,
-          directory:Directory.Documents,
-          path:"marker.sql",
-          encoding:Encoding.UTF8
-        }).then(async (result)=>{
-          const {role}= await this._utils.presentAlertConfirm("Éxito", "El sql a sido descargado en <b> \n "+result.uri.substring(result.uri.indexOf("///")+3)+" \n </b>"
-          +"¿Deseas abrir el archivo?");
-          if(role=="ok"){
-            this.fileOpener.open(result.uri,"application/octet-stream")
-          }
-        })
-        .catch((e:Error)=>this._utils.presentAlert("Error",e.message))
-      }
-    })
+    if(await this._utils.presentAlertConfirm("¿Seguro?","Deseas descargar el sql de la bbdd")){
+      var sql =await this._database.downloadSQL();
+      sql=sql.replace(/file:\/\/\/storage\/emulated\/0\/Marker\/[0-9]+.jpg/g,"/assets/shapes.svg");
+      this._utils.requestFileSystemPermission().then((accepted)=>{
+        if(accepted){
+          Filesystem.writeFile({
+            data:sql,
+            directory:Directory.Documents,
+            path:"marker.sql",
+            encoding:Encoding.UTF8
+          }).then(async (result)=>{
+            if(await this._utils.presentToastConfirm("El sql a sido descargado en <b> \n "+result.uri.substring(result.uri.indexOf("///")+3)+" \n </b>"
+            +"¿Deseas abrir el archivo?","abrir",5000)){
+              this.fileOpener.open(result.uri,"application/octet-stream")
+            }
+          })
+          .catch((e:Error)=>this._utils.presentAlert("Error",e.message))
+        }
+      })
+    }
   }
   async importSQL(){
-    var { role }= await this._utils.presentAlertConfirm("Atención","Todos los datos actuales se eliminarán")
-    if(role=="ok"){
+    if(await this._utils.presentAlertConfirm("Atención","Todos los datos actuales se eliminarán")){
     this.fileChooser.open({mime:"application/sql"}).then(async(uri)=>{
       if(await this._utils.requestFileSystemPermission())
       Filesystem.readFile({

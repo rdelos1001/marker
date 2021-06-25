@@ -23,10 +23,13 @@ export class UtilsService {
   
     await alert.present();
   }
-  async presentAlertConfirm(header:string,message:string) {
-    const alert = await this.alertController.create({
-      header,
-      message,
+  async presentAlertConfirm(header:string,message:string):Promise<boolean> {
+    return new Promise<boolean>(async(resolve)=>{
+
+      const alert = await this.alertController.create({
+        header,
+        message,
+        cssClass: 'alertConfirmClass',
       buttons: [
         {
           text: 'Cancelar',
@@ -37,9 +40,15 @@ export class UtilsService {
         }
       ]
     });
-  
+    
     await alert.present();
-    return alert.onDidDismiss()
+    const {role}= await alert.onDidDismiss();
+    if(role=="ok"){
+      resolve(true)
+    }else{
+      resolve(false);
+    }
+  })
   }
   async presentLoading(message:string,t?:number) {
     const loading = await this.loadingController.create({
@@ -50,7 +59,7 @@ export class UtilsService {
     await loading.present();
   }
   hideLoading(){
-    this.loadingController.dismiss()
+    this.loadingController.dismiss();
   }
   async presentToast(message:string,t:number=2000) {
     const toast = await this.toastController.create({
@@ -58,6 +67,25 @@ export class UtilsService {
       duration: t
     });
     toast.present();
+  }
+  async presentToastConfirm(message:string,btnText:string,t:number=2000) {
+    var clicked=false;
+    const toast = await this.toastController.create({
+      message,
+      duration: t,
+      buttons: [
+        {
+          side: 'end',
+          text: btnText,
+          handler: () => {
+            clicked=true;
+          }
+        }
+      ]
+    });
+    await toast.present();
+    await toast.onDidDismiss();
+    return clicked;
   }
   requestFileSystemPermission():Promise<boolean>{
     return new Promise<boolean>((resolve)=>{

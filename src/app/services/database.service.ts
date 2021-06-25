@@ -62,7 +62,6 @@ export class DatabaseService {
   getSeries(){
     return this.series.asObservable();
   }
-
   async getSerie(id:number):Promise<Serie>{
     if(!id){
       console.error("No hay id "+id);
@@ -220,29 +219,18 @@ export class DatabaseService {
     this.db.executeSql('DELETE FROM season WHERE id=?',[id]);
     return season;
   }
-
-  getNextEpisode(season:Season){
-    var nextEpisode:string="";
-    if(season.totalEpisodes==season.viewedEpisodes){
-      nextEpisode+="01";
-    }else if(season.viewedEpisodes<9){
-      nextEpisode+="0"+(season.viewedEpisodes+1);
-    }else{
-      nextEpisode+=(season.viewedEpisodes+1)+"";
-    }
-    if(season.totalEpisodes==season.viewedEpisodes){
-      nextEpisode=(season.number+1)+"x"+nextEpisode
-    }
-    return nextEpisode;
+  getNextEpisode(season:Season):number{
+    return (season.viewedEpisodes+1);
   }
-  async getNextEpisodeSerie(serie:Serie){
+  async getNextEpisodeSerie(serie:Serie):Promise<string>{
    await this.loadSeasons(serie.id)
    var seasons =this.seasons.getValue(); 
     seasons.sort((a,b)=>b.number-a.number);
-    if(seasons[0].totalEpisodes!=seasons[0].viewedEpisodes){
-      return seasons[0].number+"x" +this.getNextEpisode(seasons[0]);
+    var nextEpisodeValue=this.getNextEpisode(seasons[0]);
+    if(nextEpisodeValue<=9){
+      return seasons[0].number+"x0"+nextEpisodeValue;
     }else{
-      return this.getNextEpisode(seasons[0])
+      return seasons[0].number+"x"+nextEpisodeValue;
     }
   }
   downloadSQL():Promise<string>{
