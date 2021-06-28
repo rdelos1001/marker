@@ -15,8 +15,9 @@ export class MenuComponent implements OnInit {
   ngOnInit() {
     this._database.getDatabaseState().subscribe((ready)=>{
       if(ready){
-        this._database.loadSeries();
-        this._database.getSeries().subscribe((data)=>{
+        this._database.getNSeries(-1,0).then((data)=>{
+          console.log("DATA DEL MENÚ "+JSON.stringify(data));
+          
           if(data!=null){
             this.pages=[];
             data.forEach((s)=>{

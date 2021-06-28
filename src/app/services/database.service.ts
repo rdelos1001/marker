@@ -14,7 +14,6 @@ export class DatabaseService {
   private dbReady: BehaviorSubject<boolean> = new BehaviorSubject(false);
   db:SQLiteObject=null;
   seasons:BehaviorSubject<Season[]> = new BehaviorSubject(null);
-  series:BehaviorSubject<Serie[]> = new BehaviorSubject(null);
 
   constructor(private ptl:Platform,
               private sqlLite:SQLite,
@@ -43,33 +42,42 @@ export class DatabaseService {
   getDatabaseState(){
     return this.dbReady.asObservable();
   }
-  async loadSeries(){
-    let series:Serie[]=[];      
-    var data = await this.db.executeSql("SELECT * FROM serie",[])
+  /**
+   * Devuelve count cantidades de series empezando por start
+   * start empieza en 0 y está incluido
+   * si start es -1 saca todas las series
+   * */
+  async getNSeries(start:number,count:number):Promise<Serie[]>{
+    /*SELECT * FROM serie LIMIT start,30*/
+    let series:Serie[]=[]
+    var data;
+    if(start!=-1){
+      data =await this.db.executeSql("SELECT * FROM serie ORDER BY LOWER(name) LIMIT ?,?",[start,count]);
+    }else{
+      data = await this.db.executeSql("SELECT * FROM serie ORDER BY LOWER(name)",[]);
+    }
     if(data.rows.length>0){
-      for (var i=0; i<data.rows.length;i++){
-        series.push({
-          id:data.rows.item(i).id,
-          name:data.rows.item(i).name,
-          image:data.rows.item(i).image,
-          state:data.rows.item(i).state,
-          webPage:data.rows.item(i).webPage
-        })
+      for (let i = 0; i < data.rows.length; i++) {
+        series.push(new Serie(
+          data.rows.item(i).id,
+          data.rows.item(i).name,
+          data.rows.item(i).image,
+          data.rows.item(i).state,
+          data.rows.item(i).webPage
+          )
+        )
       }
     }
-    this.series.next(series);
-  }
-  getSeries(){
-    return this.series.asObservable();
+    console.log(`SERIES A SACAR start = ${start} count = ${count}\n ${JSON.stringify(series)}`);
+    
+    return series;
   }
   async getSerie(id:number):Promise<Serie>{
     if(!id){
       console.error("No hay id "+id);
       return null
     }
-    let serie:Serie={
-      name:null
-    };
+    let serie=new Serie();
     var resp = await this.db.executeSql("SELECT * FROM serie WHERE id=?",[id]);
     if(resp.rows.length>0){
       serie.id=resp.rows.item(0).id;

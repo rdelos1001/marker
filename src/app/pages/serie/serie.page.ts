@@ -1,7 +1,6 @@
-import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { Filesystem } from '@capacitor/filesystem';
-import { IonFab, ModalController } from '@ionic/angular';
+import { IonInfiniteScroll, ModalController } from '@ionic/angular';
 import { CreateUpdateSerieComponent } from 'src/app/components/create-update-serie/create-update-serie.component';
 import { Season } from 'src/app/interfaces/season';
 import { Serie } from 'src/app/interfaces/serie';
@@ -15,22 +14,40 @@ import { UtilsService } from 'src/app/services/utils.service';
 })
 export class SeriePage implements OnInit {
   filterSerie:string="";
-  serieList:Serie[];
+  serieList:Serie[]=[];
   serie_data:{
     serie:number,
     base64:string,
     nextEpisode:string
-  }[]=[]
+  }[]=[];
+  @ViewChild(IonInfiniteScroll)infiniteScroll:IonInfiniteScroll;
   constructor(private _database:DatabaseService,
               private modalController: ModalController,
               private _utils:UtilsService) { }
 
   async ionViewWillEnter(){
-    await this._utils.presentLoading("Cargando series...")
-    this._database.loadSeries();
-    this._utils.hideLoading();
+    this._database.getDatabaseState().subscribe(async (ready:boolean)=>{
+      if(ready && this.serieList.length==0){
+        await this._utils.presentLoading("Cargando series...");
+        this.serieList= await this._database.getNSeries(0,5);
+        if(this.serieList.length>0){
+          this.infiniteScroll.disabled=false;
+          this.serie_data=[];
+          for (const s of this.serieList) {
+            let base64= await this.getImageData(s.image);
+            let nextEpisode = await this._database.getNextEpisodeSerie(s);
+            this.serie_data.push({
+              serie:s.id,
+              base64,
+              nextEpisode
+            });
+          }
+          this._utils.hideLoading();
+        }
+      }
+    })
   }
-  ngOnInit() {
+  async ngOnInit() {
     this._utils.requestFileSystemPermission().then(value=>{
       if(!value){
         this._utils.$filesystemPermision.subscribe((accepted:boolean)=>{
@@ -43,31 +60,27 @@ export class SeriePage implements OnInit {
         })
       }
     })
-    this._database.getDatabaseState().subscribe(async (ready:boolean)=>{
-      if(ready){
-        this._database.getSeries().subscribe(async (data:Serie[])=>{
-          if(data){
-            this.serie_data=[];
-            for (const s of data) {
-              let base64= await this.getImageData(s.image);
-              let nextEpisode = await this._database.getNextEpisodeSerie(s);
-              this.serie_data.push({
-                serie:s.id,
-                base64,
-                nextEpisode
-              });
-            }
-            this.serieList=data;
-            //NO SE COMO VA PERO ORDENA ALFABETICAMENTE
-            this.serieList.sort(function(a,b){
-              var textA = a.state.toLowerCase();
-              var textB = b.state.toLowerCase();
-              return (textA < textB)?-1:(textA> textB) ? 1:0;
-            });
-          }
+  }
+  async loadData(event){
+    let seriesToShow:Serie[];
+    if(this.serieList.length>=5){
+      seriesToShow=await this._database.getNSeries(this.serieList.length,3);      
+      if(seriesToShow.length==0){
+        this.infiniteScroll.disabled=true;
+      }else{
+        this.serieList.push(...seriesToShow);
+        seriesToShow.forEach(async (s)=>{
+          let base64= await this.getImageData(s.image);
+          let nextEpisode = await this._database.getNextEpisodeSerie(s);
+          this.serie_data.push({
+            serie:s.id,
+            base64,
+            nextEpisode
+          });
         })
       }
-    })
+    }
+    event.target.complete();
   }
   async addSerie(){
     const modal = await this.modalController.create({
@@ -107,8 +120,9 @@ export class SeriePage implements OnInit {
         this._utils.presentAlert("Error","La serie ya existe");
       })
       .finally(async ()=>{
-        await this._database.loadSeries();
         this._utils.hideLoading();
+        this.serieList=[]
+        this.ionViewWillEnter();
       });
     }
   }
@@ -120,50 +134,50 @@ export class SeriePage implements OnInit {
     
     await modal.present();
     const { data }= await modal.onWillDismiss();
-    if(data){
-      await this._utils.presentLoading("Actualizando serie...");
-      if(originalSerie!=data.serie){
-        var updatedSerie = await this._database.updateSerie(data.serie);
-        if(data.viewed && updatedSerie.state=="initiated"){
-          await this._database.loadSeasons(updatedSerie.id);
-          var seasons= this._database.seasons.getValue();
-          seasons.sort((a,b)=>b.number-a.number);
-          var last_season= seasons[0];
-          if(last_season.number==data.viewed.seasonsViewed){
-            last_season.viewedEpisodes=data.viewed.episodesViewed;
-            last_season.totalEpisodes=data.viewed.episodes_seasons;
 
-          }else if(last_season.viewedEpisodes!=last_season.totalEpisodes){
-            last_season.viewedEpisodes=data.viewed.episodes_seasons;
-            last_season.totalEpisodes=data.viewed.episodes_seasons;
-          }
-          await this._database.updateSeason(last_season);
-          if(last_season.number!=data.viewed.seasonsViewed){
-            for (let i = last_season.number+1; i <= data.viewed.seasonsViewed; i++) {
-              
-              var seasonCreated:Season={
-                number:i,
-                serie: updatedSerie,
-                totalEpisodes:data.viewed.episodes_seasons,
-              }
-              if(i == data.viewed.seasonsViewed){
-                seasonCreated.viewedEpisodes=data.viewed.episodesViewed;
-              }else{
-                seasonCreated.viewedEpisodes=data.viewed.episodes_seasons;
-              }
-              await this._database.addSeason(seasonCreated);
+    if(data && !originalSerie.equals(data.serie)){
+      await this._utils.presentLoading("Actualizando serie...");
+      var updatedSerie = await this._database.updateSerie(data.serie);
+      if(data.viewed && updatedSerie.state=="initiated"){
+        await this._database.loadSeasons(updatedSerie.id);
+        var seasons= this._database.seasons.getValue();
+        seasons.sort((a,b)=>b.number-a.number);
+        var last_season= seasons[0];
+        if(last_season.number==data.viewed.seasonsViewed){
+          last_season.viewedEpisodes=data.viewed.episodesViewed;
+          last_season.totalEpisodes=data.viewed.episodes_seasons;
+
+        }else if(last_season.viewedEpisodes!=last_season.totalEpisodes){
+          last_season.viewedEpisodes=data.viewed.episodes_seasons;
+          last_season.totalEpisodes=data.viewed.episodes_seasons;
+        }
+        await this._database.updateSeason(last_season);
+        if(last_season.number!=data.viewed.seasonsViewed){
+          for (let i = last_season.number+1; i <= data.viewed.seasonsViewed; i++) {
+            
+            var seasonCreated:Season={
+              number:i,
+              serie: updatedSerie,
+              totalEpisodes:data.viewed.episodes_seasons,
             }
+            if(i == data.viewed.seasonsViewed){
+              seasonCreated.viewedEpisodes=data.viewed.episodesViewed;
+            }else{
+              seasonCreated.viewedEpisodes=data.viewed.episodes_seasons;
+            }
+            await this._database.addSeason(seasonCreated);
           }
         }
-        await this._database.loadSeries();
       }
+      this.serieList=[];
       this._utils.hideLoading();
+      this.ionViewWillEnter();
     }
   }
   async del(serie:Serie){
     if(await this._utils.presentAlertConfirm("Aviso","¿Estas seguro que desea eliminar a "+serie.name+"?")){
       await this._database.deleteSerie(serie.id);
-      this._database.loadSeries();
+      this.serieList= await this._database.getNSeries(0,5);
       Filesystem.deleteFile({
         path:serie.image
       });

@@ -34,5 +34,11 @@
     <ion-fab-button color="success" (click)="addSerie()">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
-  </ion-fab> 
+  </ion-fab>
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="loadData($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="crescent"
+      loadingText="">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>

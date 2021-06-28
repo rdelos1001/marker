@@ -59,7 +59,9 @@ export class UtilsService {
     await loading.present();
   }
   hideLoading(){
-    this.loadingController.dismiss();
+    this.loadingController.getTop().then((top)=>{
+      if(top)this.loadingController.dismiss();
+    })
   }
   async presentToast(message:string,t:number=2000) {
     const toast = await this.toastController.create({

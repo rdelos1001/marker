@@ -20,6 +20,8 @@ import { FilePath } from '@ionic-native/file-path/ngx';
 import { enterAnimation } from './animations/nav-animation';
 import { enterFromRightAnimation,leaveToRightAnimation } from './animations/modal-animation';
 import { FileOpener } from '@ionic-native/file-opener/ngx';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 
 @NgModule({
@@ -35,7 +37,13 @@ import { FileOpener } from '@ionic-native/file-opener/ngx';
     FormsModule,
     AppRoutingModule,
     HttpClientModule,
-    ComponentsModule
+    ComponentsModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      // Register the ServiceWorker as soon as the app is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ],
   providers: [
     SQLite,
