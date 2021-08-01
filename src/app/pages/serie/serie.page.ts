@@ -42,8 +42,8 @@ export class SeriePage implements OnInit {
               nextEpisode
             });
           }
-          this._utils.hideLoading();
         }
+        this._utils.hideLoading();
       }
     })
   }
